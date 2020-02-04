@@ -1,3 +1,26 @@
+# Endpoints
+
+
+* gc collect:                http://localhost:5000/api/collect
+* alloc staticstring:        http://localhost:5000/api/staticstring
+* alloc bigstring:           http://localhost:5000/api/bigstring
+* alloc loh:                 http://localhost:5000/api/loh/10000000
+* alloc fileprovider:        http://localhost:5000/api/fileprovider
+* alloc array:               http://localhost:5000/api/array/10000
+* alloc httpclient1(using):  http://localhost:5000/api/httpclient1?url=https://google.com
+* alloc httpclient2:         http://localhost:5000/api/httpclient2?url=https://google.com
+
+```shell
+curl http://localhost:5000/api/collect
+while true;do curl http://localhost:5000/api/staticstring; done
+while true;do curl http://localhost:5000/api/bigstring; done
+while true;do curl http://localhost:5000/api/loh/300000; done
+while true;do curl http://localhost:5000/api/fileprovider; done
+while true;do curl http://localhost:5000/api/array/10000; done
+while true;do curl http://localhost:5000/api/httpclient1?url=https://google.com; done
+while true;do curl http://localhost:5000/api/httpclient2?url=https://google.com; done
+```
+
 # Memory Management and Patterns in ASP.NET Core
 
 Memory management is complex, even in a managed framework like .NET. Analyzing and understanding memory issues can be challenging.
