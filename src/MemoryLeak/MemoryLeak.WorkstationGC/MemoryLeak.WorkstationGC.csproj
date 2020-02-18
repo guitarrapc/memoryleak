@@ -17,9 +17,6 @@
   <ItemGroup>
     <Compile Include="..\MemoryLeak\**\*.cs" Exclude="..\MemoryLeak\obj\**\*.cs" />
     <Content Include="..\MemoryLeak\**\*.cshtml" />
-    <Content Include="..\MemoryLeak\appsettings*.json">
-	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	</Content>
   </ItemGroup>
 
 </Project>
