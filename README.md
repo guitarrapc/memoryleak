@@ -1,5 +1,6 @@
 # Endpoints
 
+MemoryLeak
 
 * gc collect:                http://localhost:5000/api/collect
 * alloc staticstring:        http://localhost:5000/api/staticstring
@@ -22,7 +23,7 @@ while true;do curl http://localhost:5000/api/httpclient2?url=https://google.com;
 ```
 
 ```shell
-curl http://localhost:5000/api/collect
+curl http://localhost:5000/api/collect http://localhost:5010/api/collect
 while true;do curl http://localhost:5000/api/staticstring http://localhost:5010/api/staticstring; done
 while true;do curl http://localhost:5000/api/bigstring http://localhost:5010/api/bigstring; done
 while true;do curl http://localhost:5000/api/loh/300000 http://localhost:5010/api/loh/300000; done
@@ -30,6 +31,16 @@ while true;do curl http://localhost:5000/api/fileprovider http://localhost:5010/
 while true;do curl http://localhost:5000/api/array/10000 http://localhost:5010/api/array/10000; done
 while true;do curl http://localhost:5000/api/httpclient1?url=https://google.com http://localhost:5010/api/httpclient1?url=https://google.com; done
 while true;do curl http://localhost:5000/api/httpclient2?url=https://google.com http://localhost:5010/api/httpclient2?url=https://google.com; done
+```
+
+Diag
+
+```shell
+curl -k https://localhost:5001/api/diagscenario/deadlock
+curl -k https://localhost:5001/api/diagscenario/memleak/200000
+curl -k https://localhost:5001/api/diagscenario/memspike/10
+curl -k https://localhost:5001/api/diagscenario/exception
+curl -k https://localhost:5001/api/diagscenario/highcpu/10
 ```
 
 # Memory Management and Patterns in ASP.NET Core
