@@ -37,7 +37,7 @@
 </head>
 <body>
     <p>
-        <button id="collect-btn" type="button" style="visibility:hidden">Collect</button>
+        <button id="collect-btn" type="button" style="visibility:visible">Collect</button>
     </p>
 
     <div class="container">
@@ -172,6 +172,8 @@
         var generation0 = memoryChart.data.datasets[2].data;
         var generation1 = memoryChart.data.datasets[3].data;
         var generation2 = memoryChart.data.datasets[4].data;
+        var cpu = memoryChart.data.datasets[5].data;
+        var rps = memoryChart.data.datasets[6].data;
         var previousGen0 = 0,
             previousGen1 = 0,
             previousGen2 = 0;
@@ -183,11 +185,34 @@
                 })
                 .then(diagnostics => {
                     var now = new Date();
-                    allocated.push({ x: now, y: diagnostics.allocated / 1000000 });
-                    workingSet.push({ x: now, y: diagnostics.workingSet / 1000000 });
+                    let allocValue = diagnostics.allocated / 1000000
+                    let workingsetValue = diagnostics.workingSet / 1000000
+                    let gen2value = diagnostics.gen2
+                    let gen1value = diagnostics.gen1
+                    let gen0value = diagnostics.gen0
+                    let cpuValue = diagnostics.cpu
+                    let rpsValue = diagnostics.rps
 
-                    memoryChart.data.datasets[5].label = `CPU (${Math.round(diagnostics.cpu)}%)`;
-                    memoryChart.data.datasets[6].label = `RPS (${Math.round(diagnostics.rps / 1000)}K)`;
+                    memoryChart.data.datasets[0].label = `Allocated (${Math.round(allocValue)})`
+                    allocated.push({ x: now, y: allocValue });
+
+                    memoryChart.data.datasets[1].label = `Working Set (${Math.round(workingsetValue)})`
+                    workingSet.push({ x: now, y: workingsetValue });
+
+                    memoryChart.data.datasets[2].label = `Gen 2 (${Math.round(gen2value)})`;
+                    generation2.push({ x: now, y: gen2value });
+
+                    memoryChart.data.datasets[3].label = `Gen 1 (${Math.round(gen1value)})`;
+                    generation1.push({ x: now, y: gen1value });
+
+                    memoryChart.data.datasets[4].label = `Gen 0 (${Math.round(gen0value)})`;
+                    generation0.push({ x: now, y: gen0value });
+
+                    memoryChart.data.datasets[5].label = `CPU (${Math.round(cpuValue)}%)`;
+                    //cpu.push({ x: now, y: cpuValue });
+
+                    memoryChart.data.datasets[6].label = `RPS (${Math.round(rpsValue)})`;
+                    //rps.push({x : now, y: rpsValue});
 
                     if (previousGen2 < diagnostics.gen2) {
                         generation2.push({ x: now, y: 1 });
