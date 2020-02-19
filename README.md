@@ -43,6 +43,119 @@ curl -k https://localhost:5001/api/diagscenario/exception
 curl -k https://localhost:5001/api/diagscenario/highcpu/10
 ```
 
+## Linux Diagnostics
+
+build docker image.
+
+```shell
+cd ./src/MemoryLeap
+docker build -t diag -f .\Diag\Dockerfile .
+```
+
+deploy to k8s.
+
+```shell
+kubectl kustomize ./k8s/ | kubectl apply -f -
+```
+
+call memleak api.
+
+```
+curl http://localhost/api/diagscenario/memleak/20000
+```
+
+exec to pod.
+
+```
+kubectl exec -it diag-5d467584b9-8ncd2 /bin/bash
+```
+
+install dotnet sdks.
+
+```
+apt update && apt insall wget --yes
+wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+dpkg -i packages-microsoft-prod.deb
+add-apt-repository universe
+apt update
+apt install apt-transport-https --yes
+apt update
+apt install dotnet-sdk-3.1 --yes
+```
+
+### Linux Tracefile
+
+#### Generate trace.nettrace
+
+install dotnet-trace and generate trace.
+
+```
+dotnet tool install -g dotnet-trace
+PATH=~/.dotnet/tools:$PATH
+dotnet-treace collect -p 1
+```
+
+copy nettrace from container to local machine.
+
+```
+kubectl cp diag-5d467584b9-8ncd2:/trace.nettrace ./trace.nettrace
+```
+
+#### Analyze Tracefile
+
+download [perview](https://github.com/Microsoft/perfview) from release page.
+
+open perfview and drag&drop trace.nettrace to perview.
+
+
+
+### Linux Dumpfile
+
+#### Generate Core dump
+
+install dotnet-dump and generate core dump.
+
+```
+dotnet tool install -g dotnet-dmp
+PATH=~/.dotnet/tools:$PATH
+dotnet-dump collect -p 1 -o core_linux-memory
+```
+
+copy core dump from container to local machine.
+
+```
+kubectl cp diag-5d467584b9-8ncd2:/app/core_linux-memory ./core_linux-memory
+```
+
+#### Analyze Linux Core dump
+
+you can analyze linux core dump with windows via `dotnet-dump`
+
+```
+$ dotnet-dump analyze core_linux-memory
+> dumpheap -stat
+> dumpheap -mt 00007fada0ec0f90
+> gcroot 00007fab74010b78
+
+HandleTable:
+    00007FAE197F15F8 (pinned handle)
+    -> 00007FAD83FFF038 System.Object[]
+    -> 00007FAC74204FD8 Diag.Controllers.Processor
+    -> 00007FAC74204FF0 Diag.Controllers.CustomerCache
+    -> 00007FAC74205008 System.Collections.Generic.List`1[[Diag.Controllers.Customer, Diag]]
+    -> 00007FAD84009D08 Diag.Controllers.Customer[]
+    -> 00007FAB74010B60 Diag.Controllers.Customer
+    -> 00007FAB74010B78 System.String
+
+Found 1 unique roots (run 'gcroot -all' to see all roots).
+```
+
+Other options: use superdump, which runs on Windows Container.
+
+```
+docker run -d -p 8080:80 -v superdump:C:/superdump/data/dumps discostu105/superdump
+```
+
 # Memory Management and Patterns in ASP.NET Core
 
 Memory management is complex, even in a managed framework like .NET. Analyzing and understanding memory issues can be challenging.

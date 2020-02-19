@@ -1,0 +1,23 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: diag
+  labels:
+    app: diag
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: diag
+  template:
+    metadata:
+      labels:
+        app: diag
+    spec:
+      containers:
+      - name: diag
+        image: diag:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80

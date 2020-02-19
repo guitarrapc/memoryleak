@@ -1,0 +1,5 @@
+namespace: memoryleak
+resources:
+  - namespace.yaml
+  - deployment.yaml
+  - service.yaml
