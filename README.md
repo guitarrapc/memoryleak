@@ -107,8 +107,6 @@ download [perview](https://github.com/Microsoft/perfview) from release page.
 
 open perfview and drag&drop trace.nettrace to perview.
 
-
-
 ### Linux Dumpfile
 
 #### Generate Core dump
@@ -155,6 +153,8 @@ Other options: use superdump, which runs on Windows Container.
 ```
 docker run -d -p 8080:80 -v superdump:C:/superdump/data/dumps discostu105/superdump
 ```
+
+However superdump could not analyze with only core dump, libsos and others.... require other items.
 
 # Memory Management and Patterns in ASP.NET Core
 
