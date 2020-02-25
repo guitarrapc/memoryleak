@@ -73,12 +73,12 @@ kubectl exec -it diag-5d467584b9-8ncd2 /bin/bash
 install dotnet sdks.
 
 ```
-apt update && apt insall wget --yes
+apt update && apt install wget --yes
 wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 dpkg -i packages-microsoft-prod.deb
 add-apt-repository universe
 apt update
-apt install apt-transport-https --yes
+aptt install apt-transport-https --yes
 apt update
 apt install dotnet-sdk-3.1 --yes
 ```
@@ -107,6 +107,18 @@ download [perview](https://github.com/Microsoft/perfview) from release page.
 
 open perfview and drag&drop trace.nettrace to perview.
 
+### Linux Counter
+
+#### Show counters
+
+install dotnet-counters and run.
+
+```
+dotnet tool install -g dotnet-counters
+PATH=~/.dotnet/tools:$PATH
+dotnet-counters monitor -p 1
+```
+
 ### Linux Dumpfile
 
 #### Generate Core dump
@@ -114,15 +126,33 @@ open perfview and drag&drop trace.nettrace to perview.
 install dotnet-dump and generate core dump.
 
 ```
-dotnet tool install -g dotnet-dmp
+dotnet tool install -g dotnet-dump
 PATH=~/.dotnet/tools:$PATH
 dotnet-dump collect -p 1 -o core_linux-memory
 ```
 
-copy core dump from container to local machine.
+[choice1.] copy core dump from container to local machine.
+
+> make sure you can not analyze dump on Windows.
 
 ```
+exit
 kubectl cp diag-5d467584b9-8ncd2:/app/core_linux-memory ./core_linux-memory
+```
+
+[choice2.] copy clrmd app to analyze dump.
+
+```
+mkdir diag
+exit
+
+kubectl cp ~/git/guitarrapc/dotnet-lab/clrmd/ClrMdLab/ClrMdLab/ClrMdLab.csproj diag-5d467584b9-8ncd2:/diag/.
+kubectl cp ~/git/guitarrapc/dotnet-lab/clrmd/ClrMdLab/ClrMdLab/Program.cs diag-5d467584b9-8ncd2:/diag/.
+kubectl cp ~/git/guitarrapc/dotnet-lab/clrmd/ClrMdLab/ClrMdLab/ClrmdReader.cs diag-5d467584b9-8ncd2:/diag/.
+k exec -it diag-5d467584b9-8ncd2 /bin/bash
+cd /diag
+dotnet-dump collect -p 1 -o core_linux-memory
+dotnet run - file -i ./core_linux-memory
 ```
 
 #### Analyze Linux Core dump
