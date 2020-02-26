@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using DiagnosticCore;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +16,9 @@ namespace MemoryLeak
     {
         public static void Main(string[] args)
         {
+            // start tracker
+            AllocationTracker<GcStats>.Current.Start();
+
             CreateWebHostBuilder(args).Build().Run();
         }
 

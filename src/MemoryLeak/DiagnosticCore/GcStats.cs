@@ -116,6 +116,18 @@ namespace DiagnosticCore
                 0);
         }
 
+        public static GcStats ReadCurrent()
+        {
+            return new GcStats(
+                GC.CollectionCount(0),
+                GC.CollectionCount(1),
+                GC.CollectionCount(2),
+
+                // this will not GC.Collect, it may results inaccurate.
+                GetAllocatedBytes(false),
+                0);
+        }
+
         public static GcStats ReadFinal()
         {
             return new GcStats(
@@ -132,21 +144,24 @@ namespace DiagnosticCore
         public static GcStats FromForced(int forcedFullGarbageCollections)
             => new GcStats(forcedFullGarbageCollections, forcedFullGarbageCollections, forcedFullGarbageCollections, 0, 0);
 
-        private static long GetAllocatedBytes()
+        private static long GetAllocatedBytes(bool forceGc = true)
         {
             if (Portability.RuntimeInformation.IsMono) // Monitoring is not available in Mono, see http://stackoverflow.com/questions/40234948/how-to-get-the-number-of-allocated-bytes-
                 return 0;
 
-            // "This instance Int64 property returns the number of bytes that have been allocated by a specific
-            // AppDomain. The number is accurate as of the last garbage collection." - CLR via C#
-            // so we enforce GC.Collect here just to make sure we get accurate results
-            GC.Collect();
+            if (forceGc)
+            {
+                // "This instance Int64 property returns the number of bytes that have been allocated by a specific
+                // AppDomain. The number is accurate as of the last garbage collection." - CLR via C#
+                // so we enforce GC.Collect here just to make sure we get accurate results
+                GC.Collect();
+            }
 
             if (Portability.RuntimeInformation.IsFullFramework) // it can be a .NET app consuming our .NET Standard package
                 return AppDomain.CurrentDomain.MonitoringTotalAllocatedMemorySize;
 
             if (GetTotalAllocatedBytesDelegate != null) // it's .NET Core 3.0 with the new API available
-                return GetTotalAllocatedBytesDelegate.Invoke(true); // true for the "precise" argument
+                return GetTotalAllocatedBytesDelegate.Invoke(forceGc); // true for the "precise" argument
 
             // https://apisof.net/catalog/System.GC.GetAllocatedBytesForCurrentThread() is not part of the .NET Standard, so we use reflection to call it..
             return GetAllocatedBytesForCurrentThreadDelegate.Invoke();

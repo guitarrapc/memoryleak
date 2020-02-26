@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DiagnosticCore;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -49,6 +50,20 @@ namespace MemoryLeak.Controllers
             return Ok();
         }
 
+        [HttpGet("current")]
+        public ActionResult GetCurrent()
+        {
+            AllocationTracker<GcStats>.Current.Track();
+            return Ok();
+        }
+
+        [HttpGet("final")]
+        public ActionResult GetFinal()
+        {
+            AllocationTracker<GcStats>.Current.Final();
+            return Ok();
+        }
+
         [HttpGet("diagnostics")]
         public ActionResult<CounterMetrics> GetDiagnostics()
         {
@@ -81,6 +96,7 @@ namespace MemoryLeak.Controllers
 
                 // The memory occupied by objects.
                 Allocated = GC.GetTotalMemory(false),
+                TotalAllocated = GC.GetTotalAllocatedBytes(false),
 
                 // The working set includes both shared and private data. The shared data includes the pages that contain all the 
                 // instructions that the process executes, including instructions in the process modules and the system libraries.
@@ -111,6 +127,7 @@ namespace MemoryLeak.Controllers
         {
             public int? PID { get; set; }
             public long? Allocated { get; set; }
+            public long? TotalAllocated { get; set; }
             public long? WorkingSet { get; set; }
             public long? PrivateBytes { get; set; }
             public int? Gen0 { get; set; }

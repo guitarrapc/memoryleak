@@ -14,4 +14,8 @@
     <Content Include="..\MemoryLeak\**\*.cshtml" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DiagnosticCore\DiagnosticCore.csproj" />
+  </ItemGroup>
+
 </Project>
