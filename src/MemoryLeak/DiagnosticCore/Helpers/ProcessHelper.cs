@@ -4,9 +4,9 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text;
 using BenchmarkDotNet.Loggers;
-using DiagnosticCore.Portability.Loggers;
+using DiagnosticCore.Loggers;
 
-namespace DiagnosticCore.Portability.Helpers
+namespace DiagnosticCore.Helpers
 {
     // https://github.com/dotnet/BenchmarkDotNet/blob/cf3f8c382a6aab8fbc5c7ce804ef7451a4fdfac7/src/BenchmarkDotNet/Helpers/ProcessHelper.cs
     internal static class ProcessHelper

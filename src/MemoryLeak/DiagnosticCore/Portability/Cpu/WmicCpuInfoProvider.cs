@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using BenchmarkDotNet.Portability.Cpu;
-using DiagnosticCore.Portability.Helpers;
+using DiagnosticCore.Helpers;
 
 namespace DiagnosticCore.Portability.Cpu
 {

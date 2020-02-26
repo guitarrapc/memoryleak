@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using BenchmarkDotNet.Horology;
 using BenchmarkDotNet.Portability.Cpu;
-using DiagnosticCore.Portability.Helpers;
+using DiagnosticCore.Helpers;
 
 namespace DiagnosticCore.Portability.Cpu
 {

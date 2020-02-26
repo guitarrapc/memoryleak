@@ -5,7 +5,7 @@ using System.Text;
 using BenchmarkDotNet.Extensions;
 using BenchmarkDotNet.Loggers;
 
-namespace DiagnosticCore.Portability.Helpers
+namespace DiagnosticCore.Helpers
 {
     // https://github.com/dotnet/BenchmarkDotNet/blob/cf3f8c382a6aab8fbc5c7ce804ef7451a4fdfac7/src/BenchmarkDotNet/Helpers/ConsoleExitHandler.cs
     internal class ConsoleExitHandler : IDisposable

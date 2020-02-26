@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Win32;
 
-namespace DiagnosticCore.Portability.Helpers
+namespace DiagnosticCore.Helpers
 {
     // https://github.com/dotnet/BenchmarkDotNet/blob/2ba30330ec5ec8a9abe284c927277a6fe0fc5a0c/src/BenchmarkDotNet/Helpers/FrameworkVersionHelper.cs
     internal static class FrameworkVersionHelper

@@ -1,3 +1,10 @@
+Ref
+
+> https://github.com/dotnet/diagnostics/blob/master/documentation/diagnostics-client-library-instructions.md
+> https://github.com/dotnet/BenchmarkDotNet/blob/master/src/BenchmarkDotNet/Diagnosers/MemoryDiagnoser.cs
+> https://github.com/dotnet/BenchmarkDotNet/blob/8b018d7414497df0fcefec11f8bb97ad06ce0cf5/docs/articles/guides/how-it-works.md
+> https://github.com/dotnet/BenchmarkDotNet/blob/9caa0556b033a786c376324f73a14457290fccb9/docs/articles/samples/IntroNativeMemory.md
+
 # Endpoints
 
 MemoryLeak

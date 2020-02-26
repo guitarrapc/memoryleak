@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace DiagnosticCore.Portability.Loggers
+namespace DiagnosticCore.Loggers
 {
     // https://github.com/dotnet/BenchmarkDotNet/blob/1c431a9fb71141fa63479a53713029e3c3661b0b/src/BenchmarkDotNet/Loggers/AsyncProcessOutputReader.cs
     internal class AsyncProcessOutputReader : IDisposable
