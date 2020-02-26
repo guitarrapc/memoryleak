@@ -22,7 +22,7 @@ namespace DiagnosticCore
             Gen0Collections = gen0Collections;
             Gen1Collections = gen1Collections;
             Gen2Collections = gen2Collections;
-            AllocatedBytes = allocatedBytes;
+            TotalAllocatedBytes = allocatedBytes;
             TotalOperations = totalOperations;
         }
 
@@ -34,7 +34,7 @@ namespace DiagnosticCore
         /// <summary>
         /// Total per all runs
         /// </summary>
-        private long AllocatedBytes { get; }
+        private long TotalAllocatedBytes { get; }
 
         public long TotalOperations { get; }
 
@@ -59,7 +59,7 @@ namespace DiagnosticCore
                 left.Gen0Collections + right.Gen0Collections,
                 left.Gen1Collections + right.Gen1Collections,
                 left.Gen2Collections + right.Gen2Collections,
-                left.AllocatedBytes + right.AllocatedBytes,
+                left.TotalAllocatedBytes + right.TotalAllocatedBytes,
                 left.TotalOperations + right.TotalOperations);
         }
 
@@ -69,7 +69,7 @@ namespace DiagnosticCore
                 Math.Max(0, left.Gen0Collections - right.Gen0Collections),
                 Math.Max(0, left.Gen1Collections - right.Gen1Collections),
                 Math.Max(0, left.Gen2Collections - right.Gen2Collections),
-                Math.Max(0, left.AllocatedBytes - right.AllocatedBytes),
+                Math.Max(0, left.TotalAllocatedBytes - right.TotalAllocatedBytes),
                 Math.Max(0, left.TotalOperations - right.TotalOperations));
         }
 
@@ -98,21 +98,21 @@ namespace DiagnosticCore
         public long GetTotalAllocatedBytes(bool excludeAllocationQuantumSideEffects)
         {
             if (!excludeAllocationQuantumSideEffects)
-                return AllocatedBytes;
+                return TotalAllocatedBytes;
 
-            return AllocatedBytes <= AllocationQuantum ? 0L : AllocatedBytes;
+            return TotalAllocatedBytes <= AllocationQuantum ? 0L : TotalAllocatedBytes;
         }
 
         public static GcStats ReadInitial()
         {
             // this will force GC.Collect, so we want to do this before collecting collections counts
-            long allocatedBytes = GetAllocatedBytes();
+            long totalAllocatedBytes = GetTotalAllocatedBytesFromDelegate();
 
             return new GcStats(
                 GC.CollectionCount(0),
                 GC.CollectionCount(1),
                 GC.CollectionCount(2),
-                allocatedBytes,
+                totalAllocatedBytes,
                 0);
         }
 
@@ -124,7 +124,7 @@ namespace DiagnosticCore
                 GC.CollectionCount(2),
 
                 // this will not GC.Collect, it may results inaccurate.
-                GetAllocatedBytes(false),
+                GetTotalAllocatedBytesFromDelegate(false),
                 0);
         }
 
@@ -137,14 +137,14 @@ namespace DiagnosticCore
 
                 // this will force GC.Collect, so we want to do this after collecting collections counts
                 // to exclude this single full forced collection from results
-                GetAllocatedBytes(),
+                GetTotalAllocatedBytesFromDelegate(),
                 0);
         }
 
         public static GcStats FromForced(int forcedFullGarbageCollections)
             => new GcStats(forcedFullGarbageCollections, forcedFullGarbageCollections, forcedFullGarbageCollections, 0, 0);
 
-        private static long GetAllocatedBytes(bool forceGc = true)
+        private static long GetTotalAllocatedBytesFromDelegate(bool forceGc = true)
         {
             if (Portability.RuntimeInformation.IsMono) // Monitoring is not available in Mono, see http://stackoverflow.com/questions/40234948/how-to-get-the-number-of-allocated-bytes-
                 return 0;
@@ -186,7 +186,7 @@ namespace DiagnosticCore
         }
 
         public string ToOutputLine()
-            => $"{ResultsLinePrefix} {Gen0Collections} {Gen1Collections} {Gen2Collections} {AllocatedBytes} {TotalOperations}";
+            => $"{ResultsLinePrefix} {Gen0Collections} {Gen1Collections} {Gen2Collections} {TotalAllocatedBytes} {TotalOperations}";
 
         public static GcStats Parse(string line)
         {
@@ -237,7 +237,7 @@ namespace DiagnosticCore
             return result;
         }
 
-        public bool Equals(GcStats other) => Gen0Collections == other.Gen0Collections && Gen1Collections == other.Gen1Collections && Gen2Collections == other.Gen2Collections && AllocatedBytes == other.AllocatedBytes && TotalOperations == other.TotalOperations;
+        public bool Equals(GcStats other) => Gen0Collections == other.Gen0Collections && Gen1Collections == other.Gen1Collections && Gen2Collections == other.Gen2Collections && TotalAllocatedBytes == other.TotalAllocatedBytes && TotalOperations == other.TotalOperations;
 
         public override bool Equals(object obj) => obj is GcStats other && Equals(other);
 
@@ -248,7 +248,7 @@ namespace DiagnosticCore
                 int hashCode = Gen0Collections;
                 hashCode = (hashCode * 397) ^ Gen1Collections;
                 hashCode = (hashCode * 397) ^ Gen2Collections;
-                hashCode = (hashCode * 397) ^ AllocatedBytes.GetHashCode();
+                hashCode = (hashCode * 397) ^ TotalAllocatedBytes.GetHashCode();
                 hashCode = (hashCode * 397) ^ TotalOperations.GetHashCode();
                 return hashCode;
             }
