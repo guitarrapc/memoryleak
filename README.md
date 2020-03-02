@@ -12,32 +12,25 @@ MemoryLeak
 * gc collect:                http://localhost:5000/api/collect
 * alloc staticstring:        http://localhost:5000/api/staticstring
 * alloc bigstring:           http://localhost:5000/api/bigstring
+* alloc big int array        http://localhost:5000/api/bigintarray
 * alloc loh:                 http://localhost:5000/api/loh/10000000
 * alloc fileprovider:        http://localhost:5000/api/fileprovider
 * alloc array:               http://localhost:5000/api/array/10000
 * alloc httpclient1(using):  http://localhost:5000/api/httpclient1?url=https://google.com
 * alloc httpclient2:         http://localhost:5000/api/httpclient2?url=https://google.com
 
-```shell
-curl http://localhost:5000/api/collect
-while true;do curl http://localhost:5000/api/staticstring; done
-while true;do curl http://localhost:5000/api/bigstring; done
-while true;do curl http://localhost:5000/api/loh/300000; done
-while true;do curl http://localhost:5000/api/fileprovider; done
-while true;do curl http://localhost:5000/api/array/10000; done
-while true;do curl http://localhost:5000/api/httpclient1?url=https://google.com; done
-while true;do curl http://localhost:5000/api/httpclient2?url=https://google.com; done
-```
+run bench.
 
 ```shell
-curl http://localhost:5000/api/collect http://localhost:5010/api/collect
-while true;do curl http://localhost:5000/api/staticstring http://localhost:5010/api/staticstring; done
-while true;do curl http://localhost:5000/api/bigstring http://localhost:5010/api/bigstring; done
-while true;do curl http://localhost:5000/api/loh/300000 http://localhost:5010/api/loh/300000; done
-while true;do curl http://localhost:5000/api/fileprovider http://localhost:5010/api/fileprovider; done
-while true;do curl http://localhost:5000/api/array/10000 http://localhost:5010/api/array/10000; done
-while true;do curl http://localhost:5000/api/httpclient1?url=https://google.com http://localhost:5010/api/httpclient1?url=https://google.com; done
-while true;do curl http://localhost:5000/api/httpclient2?url=https://google.com http://localhost:5010/api/httpclient2?url=https://google.com; done
+./bombardier.exe -c 125 -n 10000000 http://localhost:5000
+./bombardier.exe -c 125 -n 10000000 http://localhost:5000/api/staticstring
+./bombardier.exe -c 125 -n 10000000 http://localhost:5000/api/bigstring
+./bombardier.exe -c 125 -n 10000000 http://localhost:5000/api/bigintarray
+./bombardier.exe -c 125 -n 10000000 http://localhost:5000/api/loh/300000
+./bombardier.exe -c 125 -n 10000000 http://localhost:5000/api/fileprovider
+./bombardier.exe -c 125 -n 10000000 http://localhost:5000/api/array/10000
+./bombardier.exe -c 125 -n 10000000 http://localhost:5000/api/httpclient1?url=https://google.com
+./bombardier.exe -c 125 -n 10000000 http://localhost:5000/api/httpclient2?url=https://google.com
 ```
 
 Diag
@@ -113,6 +106,18 @@ kubectl cp diag-5d467584b9-8ncd2:/trace.nettrace ./trace.nettrace
 download [perview](https://github.com/Microsoft/perfview) from release page.
 
 open perfview and drag&drop trace.nettrace to perview.
+
+#### Analyze Tracefile on Speedscope.app
+
+Convert trace file.
+
+```shell
+dotnet-trace convert trace.nettrace --format speedscope
+```
+
+go and upload `trace.speedscope.json` file.
+
+> https://www.speedscope.app/
 
 ### Linux Counter
 

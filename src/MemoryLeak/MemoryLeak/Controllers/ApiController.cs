@@ -35,6 +35,16 @@ namespace MemoryLeak.Controllers
             return new String('x', 10 * 1024);
         }
 
+        [HttpGet("bigintarray/{count=300000}")]
+        public ActionResult<int> GetBigIntArray(int count)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                _ = new int[100];
+            }
+            return count * 100;
+        }
+
         [HttpGet("loh/{size=85000}")]
         public int GetLOH(int size)
         {

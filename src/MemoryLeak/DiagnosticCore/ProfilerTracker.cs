@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 
 namespace DiagnosticCore
 {
@@ -13,23 +14,20 @@ namespace DiagnosticCore
         public ProfilerTracker(int processId)
         {
             _processId = processId;
-            profilerStats = new[] {
+            profilerStats = new IProfilerStat[] {
                 new CpuProfilerStat(_processId),
+                new GCEventProfilerStat(_processId),
+                new EventListenerStat(EventListeners.ClrRuntimeEventKeywords.GC),
             };
         }
 
         public void Start()
         {
-            if (initialized) return;
-
-            Task monitorTask = new Task(() =>
+            foreach (var profile in profilerStats)
             {
-                foreach (var stat in profilerStats)
-                {
-                    stat.Start();
-                }
-            });
-            monitorTask.Start();
+                var t = new Task(() => profile.Start());
+                t.Start();
+            }
             initialized = true;
         }
         public void Restart()
