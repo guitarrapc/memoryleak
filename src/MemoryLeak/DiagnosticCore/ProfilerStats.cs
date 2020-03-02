@@ -68,7 +68,7 @@ namespace DiagnosticCore
             _source.Dynamic.All -= Trigger;
         }
 
-        internal void Trigger(TraceEvent evt)
+        private void Trigger(TraceEvent evt)
         {
             if (evt.EventName.Equals("EventCounters"))
             {
