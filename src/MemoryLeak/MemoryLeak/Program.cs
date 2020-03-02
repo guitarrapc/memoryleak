@@ -19,6 +19,11 @@ namespace MemoryLeak
             // start tracker
             AllocationTracker<GcStats>.Current.Start();
             ThreadingTracker<ThreadingStats>.Current.Start();
+            Task monitorTask = new Task(() =>
+            {
+                new ProfilerTracker().TriggerDumpOnCpuUsage(System.Diagnostics.Process.GetCurrentProcess().Id, 500);
+            });
+            monitorTask.Start();
 
             CreateWebHostBuilder(args).Build().Run();
         }
