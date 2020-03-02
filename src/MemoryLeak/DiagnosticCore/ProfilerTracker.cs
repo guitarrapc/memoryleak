@@ -1,87 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.Tracing;
-using System.Text;
-using Microsoft.Diagnostics.NETCore.Client;
-using Microsoft.Diagnostics.Tracing;
-using Microsoft.Diagnostics.Tracing.Parsers;
+﻿using System.Threading.Tasks;
 
 namespace DiagnosticCore
 {
-    // https://github.com/dotnet/diagnostics/blob/b1f65150bb22ec96f56aaf3f0c6bb24c0b356a01/documentation/tutorial/src/triggerdump/Program.cs
     public class ProfilerTracker
     {
-        public static ProfilerTracker Current = new ProfilerTracker(System.Diagnostics.Process.GetCurrentProcess().Id, 500);
+        public static ProfilerTracker Current = new ProfilerTracker(System.Diagnostics.Process.GetCurrentProcess().Id);
         
         private readonly int _processId;
-        private readonly double _cpuUsageThreshold;
+        private readonly CpuProfilerStats cpuProfilerStats;
+        private bool initialized;
 
-        private EventPipeSession _session;
-        private EventPipeEventSource _source;
-
-        public ProfilerTracker(int processId, double cpuUsageThreshold)
+        public ProfilerTracker(int processId)
         {
             _processId = processId;
-            _cpuUsageThreshold = cpuUsageThreshold;
+            cpuProfilerStats = new CpuProfilerStats(_processId);
         }
 
-        public void StartTriggerDumpOnCpuUsage()
+        public void Start()
         {
-            if (_source != null && _session != null)
-            {
-                // already register eventpipeeventsource, let's restart
-                _source.Dynamic.All += TriggerCpuDump;
-                return;
-            }
-            var providers = new List<EventPipeProvider>()
-            {
-                new EventPipeProvider(
-                    "System.Runtime",
-                    EventLevel.Informational,
-                    (long)ClrTraceEventParser.Keywords.None,
-                    new Dictionary<string, string>() {
-                        { "EventCounterIntervalSec", "1" }
-                    }
-                )
-            };
-            var client = new DiagnosticsClient(_processId);
-            using (var session = client.StartEventPipeSession(providers))
-            using (var source = new EventPipeEventSource(session.EventStream))
-            {
-                _session = session;
-                _source = source;
-                _source.Dynamic.All += TriggerCpuDump;
+            if (initialized) return;
 
-                try
-                {
-                    _source?.Process();
-                }
-                catch (DiagnosticsClientException) { }
-            }
-        }
-        public void StopTriggerDumpOnCpuUsage()
-        {
-            // do not dispose source and session.
-            _source.Dynamic.All -= TriggerCpuDump;
-        }
-        private void TriggerCpuDump(TraceEvent evt)
-        {
-            if (evt.EventName.Equals("EventCounters"))
+            Task monitorTask = new Task(() =>
             {
-                var names = evt.PayloadNames;
-                // todo: get type to avoid boxing.
-                IDictionary<string, object> payloadVal = (IDictionary<string, object>)(evt.PayloadValue(0));
-                IDictionary<string, object> payloadFields = (IDictionary<string, object>)(payloadVal["Payload"]);
-                if (payloadFields["Name"].ToString().Equals("cpu-usage"))
-                {
-                    double cpuUsage = Double.Parse(payloadFields["Mean"]?.ToString());
-                    Console.WriteLine("cpu usage: " + cpuUsage);
-                    if (cpuUsage > _cpuUsageThreshold)
-                    {
-                        //client.WriteDump(DumpType.Normal, "/tmp/minidump.dmp");
-                    }
-                }
-            }
+                cpuProfilerStats.Start();
+            });
+            monitorTask.Start();
+            initialized = true;
+        }
+        public void Restart()
+        {
+            if (!initialized) return;
+            
+            cpuProfilerStats.Restart();
+        }
+        public void Stop()
+        {
+            if (!initialized) return;
+
+            cpuProfilerStats.Stop();
         }
     }
 }
