@@ -39,11 +39,11 @@ namespace DiagnosticCore
         /// <summary>
         /// Total per all runs (not affect from GC.Collect)
         /// </summary>
-        private long TotalAllocatedBytes { get; }
+        public long TotalAllocatedBytes { get; }
         /// <summary>
         /// Actual (affect from GC.Collect)
         /// </summary>
-        private long AllocatedBytes { get; }
+        public long AllocatedBytes { get; }
 
         public long TotalOperations { get; }
 
@@ -79,8 +79,8 @@ namespace DiagnosticCore
                 Math.Max(0, left.Gen0Collections - right.Gen0Collections),
                 Math.Max(0, left.Gen1Collections - right.Gen1Collections),
                 Math.Max(0, left.Gen2Collections - right.Gen2Collections),
-                Math.Max(0, left.AllocatedBytes - right.AllocatedBytes),
-                Math.Max(0, left.TotalAllocatedBytes - right.TotalAllocatedBytes),
+                left.AllocatedBytes - right.AllocatedBytes,
+                left.TotalAllocatedBytes - right.TotalAllocatedBytes,
                 Math.Max(0, left.TotalOperations - right.TotalOperations));
         }
 
