@@ -18,6 +18,7 @@ namespace MemoryLeak
         {
             // start tracker
             AllocationTracker<GcStats>.Current.Start();
+            ThreadingTracker<ThreadingStats>.Current.Start();
 
             CreateWebHostBuilder(args).Build().Run();
         }

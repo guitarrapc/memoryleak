@@ -54,13 +54,27 @@ namespace MemoryLeak.Controllers
         public ActionResult GetCurrent()
         {
             AllocationTracker<GcStats>.Current.Track();
-            return Ok();
+            ThreadingTracker<ThreadingStats>.Current.Track();
+            return Ok(new
+            {
+                GC = new
+                {
+                    AllocationTracker<GcStats>.Current.CurrentStat,
+                    AllocationTracker<GcStats>.Current.DiffStat,
+                },
+                Threading = new
+                {
+                    ThreadingTracker<ThreadingStats>.Current.CurrentStat,
+                    ThreadingTracker<ThreadingStats>.Current.DiffStat,
+                },
+            });
         }
 
         [HttpGet("final")]
         public ActionResult GetFinal()
         {
             AllocationTracker<GcStats>.Current.Final();
+            AllocationTracker<ThreadingStats>.Current.Final();
             return Ok();
         }
 

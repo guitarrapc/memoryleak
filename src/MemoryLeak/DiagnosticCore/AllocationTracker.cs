@@ -4,17 +4,6 @@ using System.Text;
 
 namespace DiagnosticCore
 {
-    public interface ITracker<TStats> where TStats : struct
-    {
-        TStats PreviousStat { get; }
-        TStats CurrentStat { get; }
-        TStats DiffStat { get; }
-
-        void Start();
-        void Track();
-        void Final();
-    }
-
     public class AllocationTracker<TStats> : ITracker<GcStats>
     {
         public static ITracker<GcStats> Current { get; } = new AllocationTracker<GcStats>();
