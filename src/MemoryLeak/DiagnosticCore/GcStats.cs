@@ -17,7 +17,7 @@ namespace DiagnosticCore
 
         private static readonly Func<bool, long> GetTotalMemoryDelegate = CreateGetTotalMemoryDelegate();
 
-        private static readonly Func<GCMemoryInfo> GetGCMemoryInfoDelegate = CreateGetGCMemoryInfoDelegate();
+        private static readonly Delegate GetGCMemoryInfoDelegate = CreateGetGCMemoryInfoDelegate();
 
         public static readonly GcStats Empty = new GcStats(0, 0, 0, 0, 0, 0);
 
@@ -135,8 +135,6 @@ namespace DiagnosticCore
 
             long allocatedBytes = GetAllocatedBytesFromDelegate();
 
-            var gcMemoryInfo = GetGCMemoryInfoFromDelegate();
-
             return new GcStats(
                 GC.CollectionCount(0),
                 GC.CollectionCount(1),
@@ -222,10 +220,14 @@ namespace DiagnosticCore
             return GetAllocatedBytesForCurrentThreadDelegate.Invoke();
         }
 
-        private static GCMemoryInfo GetGCMemoryInfoFromDelegate()
+        private static object GetGCMemoryInfoFromDelegate()
         {
             if (GetGCMemoryInfoDelegate != null) // it's .NET Core 3.0 with the new API available
-                return GetGCMemoryInfoDelegate.Invoke(); // true for the "precise" argument
+            {
+                // todo: avoid boxing
+                var result = GetGCMemoryInfoDelegate.DynamicInvoke();
+                return result;
+            }
             
             return new GCMemoryInfo();
         }
@@ -257,7 +259,7 @@ namespace DiagnosticCore
             return method != null ? (Func<bool, long>)method.CreateDelegate(typeof(Func<bool, long>)) : null;
         }
 
-        private static Func<GCMemoryInfo> CreateGetGCMemoryInfoDelegate()
+        private static Delegate CreateGetGCMemoryInfoDelegate()
         {
             var gcMemoryInfo = typeof(Delegate).Assembly.GetType("System.GCMemoryInfo");
             Type funcType = typeof(Func<>).MakeGenericType(gcMemoryInfo);
@@ -265,10 +267,7 @@ namespace DiagnosticCore
 
             // we create delegate to avoid boxing, IMPORTANT!
             var @delegate = method != null ? method.CreateDelegate(funcType) : null;
-            
-            var a = @delegate.DynamicInvoke(); // can call, but don't want dynamic invoke. <- slow
-            var b = (Func<GCMemoryInfo>)@delegate; // how to cast delegate to Func? Exception happen.
-            return b;
+            return @delegate;
         }
 
         public string ToOutputLine()
