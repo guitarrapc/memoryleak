@@ -8,14 +8,20 @@ using Microsoft.Diagnostics.Tracing.Parsers;
 
 namespace DiagnosticCore
 {
+    public interface IProfilerStat
+    {
+        void Start();
+        void Restart();
+        void Stop();
+    }
     // https://github.com/dotnet/diagnostics/blob/b1f65150bb22ec96f56aaf3f0c6bb24c0b356a01/documentation/tutorial/src/triggerdump/Program.cs
-    internal class CpuProfilerStats
+    internal class CpuProfilerStat : IProfilerStat
     {
         private EventPipeSession _session;
         private EventPipeEventSource _source;
         private readonly int _processId;
 
-        public CpuProfilerStats(int processId) => _processId = processId;
+        public CpuProfilerStat(int processId) => _processId = processId;
 
         public void Start()
         {

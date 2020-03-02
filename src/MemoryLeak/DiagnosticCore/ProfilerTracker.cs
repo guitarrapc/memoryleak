@@ -7,13 +7,15 @@ namespace DiagnosticCore
         public static ProfilerTracker Current = new ProfilerTracker(System.Diagnostics.Process.GetCurrentProcess().Id);
         
         private readonly int _processId;
-        private readonly CpuProfilerStats cpuProfilerStats;
+        private readonly IProfilerStat[] profilerStats;
         private bool initialized;
 
         public ProfilerTracker(int processId)
         {
             _processId = processId;
-            cpuProfilerStats = new CpuProfilerStats(_processId);
+            profilerStats = new[] {
+                new CpuProfilerStat(_processId),
+            };
         }
 
         public void Start()
@@ -22,7 +24,10 @@ namespace DiagnosticCore
 
             Task monitorTask = new Task(() =>
             {
-                cpuProfilerStats.Start();
+                foreach (var stat in profilerStats)
+                {
+                    stat.Start();
+                }
             });
             monitorTask.Start();
             initialized = true;
@@ -30,14 +35,20 @@ namespace DiagnosticCore
         public void Restart()
         {
             if (!initialized) return;
-            
-            cpuProfilerStats.Restart();
+
+            foreach (var stat in profilerStats)
+            {
+                stat.Restart();
+            }
         }
         public void Stop()
         {
             if (!initialized) return;
 
-            cpuProfilerStats.Stop();
+            foreach (var stat in profilerStats)
+            {
+                stat.Stop();
+            }
         }
     }
 }
