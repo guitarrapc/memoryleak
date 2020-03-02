@@ -70,6 +70,19 @@ namespace MemoryLeak.Controllers
             });
         }
 
+        [HttpGet("startdumptracker")]
+        public ActionResult StartDumpTracker()
+        {
+            ProfilerTracker.Current.StartTriggerDumpOnCpuUsage();
+            return Ok();
+        }
+        [HttpGet("stopdumptracker")]
+        public ActionResult StopDumpTracker()
+        {
+            ProfilerTracker.Current.StopTriggerDumpOnCpuUsage();
+            return Ok();
+        }
+
         [HttpGet("final")]
         public ActionResult GetFinal()
         {

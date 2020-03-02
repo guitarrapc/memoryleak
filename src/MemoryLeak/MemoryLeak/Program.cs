@@ -21,7 +21,7 @@ namespace MemoryLeak
             ThreadingTracker<ThreadingStats>.Current.Start();
             Task monitorTask = new Task(() =>
             {
-                new ProfilerTracker().TriggerDumpOnCpuUsage(System.Diagnostics.Process.GetCurrentProcess().Id, 500);
+                ProfilerTracker.Current.StartTriggerDumpOnCpuUsage();
             });
             monitorTask.Start();
 
