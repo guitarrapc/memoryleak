@@ -42,7 +42,7 @@ namespace MemoryLeak
         private static async Task GCDurationProfilerCallback(GCDurationResult value)
         {
             // send metrics to datadog or any favor you like.
-            Console.WriteLine($"GC #{value.Index} {value.DurationMillsec}ms");
+            Console.WriteLine($"GC End; Gen {value.Generation}; Index {value.Index}; Duration {value.DurationMillsec}ms; Reason {value.Reason};");
         }
     }
 }
