@@ -51,11 +51,11 @@ namespace DiagnosticCore
 
     internal class GCEventListenerStat : IProfilerStat
     {
-        private GCProfileEventListener listener;
+        private GCDurationEventListener listener;
 
         public GCEventListenerStat()
         {
-            listener = new GCProfileEventListener("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.GC);
+            listener = new GCDurationEventListener("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.GC);
         }
         public void Restart()
         {

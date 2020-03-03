@@ -15,8 +15,8 @@ namespace DiagnosticCore
         {
             _processId = processId;
             profilerStats = new IProfilerStat[] {
-                new CpuProfilerStat(_processId),
-                new GCEventProfilerStat(_processId),
+                //new CpuProfilerStat(_processId),
+                //new GCEventProfilerStat(_processId),
                 new GCEventListenerStat(),
             };
         }
