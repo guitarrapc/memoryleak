@@ -8,7 +8,7 @@ namespace DiagnosticCore
     public class ProfilerTrackerOptions
     {
         public CancellationToken CancellationToken { get; set; }
-        public Func<GCDurationResult, Task> GCDurationProfilerCallback { get; set; }
+        public Func<GCStatistics, Task> GCDurationProfilerCallback { get; set; }
     }
     public class ProfilerTracker
     {

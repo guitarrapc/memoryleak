@@ -64,9 +64,9 @@ namespace DiagnosticCore
     public class GCEventListenerStat : IProfilerStat
     {
         private GCEventListener listener;
-        public Action<ChannelReader<GCDurationResult>> ProfilerCallback { get; set; }
+        public Action<ChannelReader<GCStatistics>> ProfilerCallback { get; set; }
 
-        public GCEventListenerStat(Func<GCDurationResult, Task> onGCDurationEvent)
+        public GCEventListenerStat(Func<GCStatistics, Task> onGCDurationEvent)
         {
             listener = new GCEventListener(onGCDurationEvent);
         }

@@ -39,10 +39,10 @@ namespace MemoryLeak
             ProfilerTracker.Current.Value.Start();
         }
 
-        private static async Task GCDurationProfilerCallback(GCDurationResult value)
+        private static async Task GCDurationProfilerCallback(GCStatistics value)
         {
             // send metrics to datadog or any favor you like.
-            Console.WriteLine($"GC Gen {value.Generation}; Index {value.Index}; Duration {value.DurationMillsec}ms; Reason {value.Reason};");
+            Console.WriteLine($"GC Index {value.Index}; Gen {value.Generation}; Type {value.Type}; Duration {value.DurationMillsec}ms; Reason {value.Reason};");
         }
     }
 }
