@@ -49,14 +49,13 @@ namespace DiagnosticCore
         }
     }
 
-    internal class EventListenerStat : IProfilerStat
+    internal class GCEventListenerStat : IProfilerStat
     {
-        private SimpleEventListener listener;
-        private readonly ClrRuntimeEventKeywords keyword;
+        private GCProfileEventListener listener;
 
-        public EventListenerStat(ClrRuntimeEventKeywords clrRuntimeEventKeyword)
+        public GCEventListenerStat()
         {
-            keyword = clrRuntimeEventKeyword;
+            listener = new GCProfileEventListener("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.GC);
         }
         public void Restart()
         {
@@ -65,35 +64,10 @@ namespace DiagnosticCore
 
         public void Start()
         {
-            SimpleEventListener.keyword = (int)keyword;
-            listener = new SimpleEventListener();
-        }
-
-        public void Stop()
-        {
-            listener.Stop();
-        }
-    }
-
-    internal class ProfilerEventListenerStat : IProfilerStat
-    {
-        private GCEventListener listener;
-
-        public ProfilerEventListenerStat(string targetSourceName, ClrRuntimeEventKeywords clrRuntimeEventKeyword)
-        {
-            listener = new GCEventListener(targetSourceName, EventLevel.Informational, ClrRuntimeEventKeywords.GC);
-        }
-        public void Restart()
-        {
-            listener.Restart();
-        }
-
-        public void Start()
-        {
-            listener.RunWithCallback(eventData => listener.MeastureGcElapsedTime(eventData), () =>
+            listener.RunWithCallback(eventData => listener.DefaultHandler(eventData), () =>
             {
-                Console.WriteLine("Start: EventListerStat");
-            });            
+                Console.WriteLine($"Start: {nameof(GCEventListenerStat)}");
+            });
         }
 
         public void Stop()
