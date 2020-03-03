@@ -201,9 +201,9 @@
                     var now = new Date();
                     let allocValue = diagnostics.allocated / 1000000
                     let workingsetValue = diagnostics.workingSet / 1000000
-                    let gen2value = diagnostics.gen2
-                    let gen1value = diagnostics.gen1
                     let gen0value = diagnostics.gen0
+                    let gen1value = diagnostics.gen1
+                    let gen2value = diagnostics.gen2
                     let cpuValue = diagnostics.cpu
                     let rpsValue = diagnostics.rps
                     let totalAllocValue = diagnostics.totalAllocated / 1000000
@@ -214,14 +214,14 @@
                     memoryChart.data.datasets[1].label = `Working Set (${Math.round(workingsetValue)})`
                     workingSet.push({ x: now, y: workingsetValue });
 
-                    memoryChart.data.datasets[2].label = `Gen 2 (${Math.round(gen2value)})`;
-                    generation2.push({ x: now, y: gen2value });
+                    memoryChart.data.datasets[2].label = `Gen 2 (${Math.round(gen0value)})`;
+                    generation0.push({ x: now, y: gen0value });
 
                     memoryChart.data.datasets[3].label = `Gen 1 (${Math.round(gen1value)})`;
                     generation1.push({ x: now, y: gen1value });
 
-                    memoryChart.data.datasets[4].label = `Gen 0 (${Math.round(gen0value)})`;
-                    generation0.push({ x: now, y: gen0value });
+                    memoryChart.data.datasets[4].label = `Gen 0 (${Math.round(gen2value)})`;
+                    generation2.push({ x: now, y: gen2value });
 
                     memoryChart.data.datasets[5].label = `CPU (${Math.round(cpuValue)}%)`;
                     //cpu.push({ x: now, y: cpuValue });
