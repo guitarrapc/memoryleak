@@ -14,14 +14,6 @@ namespace DiagnosticCore.EventListeners
         {
         }
 
-        public GCProfileEventListener(string targetSourceName, EventLevel level, long keywords) : base(targetSourceName, level, keywords)
-        {
-        }
-
-        public GCProfileEventListener(Guid targetSourceGuid, EventLevel level, ClrRuntimeEventKeywords keywords) : base(targetSourceGuid, level, keywords)
-        {
-        }
-
         public override void DefaultHandler(EventWrittenEventArgs eventData)
         {
             if (eventData.EventName == "EventCounters") return;

@@ -14,6 +14,7 @@ namespace DiagnosticCore.EventListeners
 
         private Action<EventWrittenEventArgs> _eventWritten;
         private List<EventSource> _tmpEventSourceList = new List<EventSource>();
+        private List<EventSource> _enabledEventtSourceList = new List<EventSource>();
 
         // .ctor call after OnEventSourceCreated. https://github.com/Microsoft/ApplicationInsights-dotnet/issues/1106
         // https://github.com/dotnet/corefx/blob/master/src/Common/tests/System/Diagnostics/Tracing/TestEventListener.cs#L40
@@ -68,11 +69,11 @@ namespace DiagnosticCore.EventListeners
         }
         private void EnableSourceIfMatch(EventSource source, EventKeywords keywords)
         {
-            Console.WriteLine(source.Name);
             if (source.Name.Equals(_targetSourceName) ||
                 source.Guid.Equals(_targetSourceGuid))
             {
                 EnableEvents(source, _level, keywords);
+                _enabledEventtSourceList.Add(source);
             }
         }
 
@@ -113,13 +114,13 @@ namespace DiagnosticCore.EventListeners
 
         public virtual void Restart()
         {
-            foreach (var enabled in _tmpEventSourceList)
+            foreach (var enabled in _enabledEventtSourceList)
                 EnableEvents(enabled, EventLevel.Informational, _keywords);
         }
 
         public virtual void Stop()
         {
-            foreach (var enabled in _tmpEventSourceList)
+            foreach (var enabled in _enabledEventtSourceList)
                 DisableEvents(enabled);
         }
 
