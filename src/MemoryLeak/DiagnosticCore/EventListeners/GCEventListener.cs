@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace DiagnosticCore.EventListeners
 {
-    public interface IChannelReader<T> where T : struct
-    {
-        ValueTask OnReadResultAsync(CancellationToken cancellationToken);
-    }
-
+    /// <summary>
+    /// Data structure represent GC statistics
+    /// </summary>
     public struct GCStatistics
     {
         public uint Index { get; set; }
@@ -43,8 +40,9 @@ namespace DiagnosticCore.EventListeners
     }
 
     /// <summary>
-    /// payload ref: https://docs.microsoft.com/en-us/dotnet/framework/performance/garbage-collection-etw-events
+    /// EventListener to collect Garbage Collection events. <see cref="GCStatistics"/>.
     /// </summary>
+    /// <remarks>payload: https://docs.microsoft.com/en-us/dotnet/framework/performance/garbage-collection-etw-events </remarks>
     public class GCEventListener : ProfileEventListenerBase, IChannelReader<GCStatistics>
     {
         private readonly Channel<GCStatistics> _channel;
@@ -65,15 +63,15 @@ namespace DiagnosticCore.EventListeners
             _channel = Channel.CreateBounded<GCStatistics>(channelOption);
         }
 
-        public override void DefaultHandler(EventWrittenEventArgs eventData)
+        public override void EventCreatedHandler(EventWrittenEventArgs eventData)
         {
-            if (eventData.EventName.StartsWith("GCStart_"))
+            if (eventData.EventName.StartsWith("GCStart_")) // GCStart_V1 / V2 ...
             {
                 timeGCStart = eventData.TimeStamp.Ticks;
                 reason = uint.Parse(eventData.Payload[2].ToString());
                 type = uint.Parse(eventData.Payload[3].ToString());
             }
-            else if (eventData.EventName.StartsWith("GCEnd_"))
+            else if (eventData.EventName.StartsWith("GCEnd_")) // GCEnd_V1 / V2 ...
             {
                 long timeGCEnd = eventData.TimeStamp.Ticks;
                 var gcIndex = uint.Parse(eventData.Payload[0].ToString());

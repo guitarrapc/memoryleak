@@ -8,7 +8,8 @@ namespace DiagnosticCore
     public class ProfilerTrackerOptions
     {
         public CancellationToken CancellationToken { get; set; }
-        public Func<GCStatistics, Task> GCDurationProfilerCallback { get; set; }
+        public Func<GCStatistics, Task> GCProfilerCallback { get; set; }
+        public Func<ThreadStatistics, Task> ThreadProfilerCallback { get; set; }
     }
     public class ProfilerTracker
     {
@@ -16,17 +17,15 @@ namespace DiagnosticCore
 
         public static ProfilerTrackerOptions Options { get; set; } = new ProfilerTrackerOptions();
 
-        private readonly int _processId;
         private readonly IProfilerStat[] profilerStats;
         private bool initialized;
 
-        public ProfilerTracker()
-        {
+        public ProfilerTracker() =>
             // list Stat
             profilerStats = new IProfilerStat[] {
-                new GCEventListenerStat(Options?.GCDurationProfilerCallback),
+                new GCEventStat(Options?.GCProfilerCallback),
+                new ThreadEventStat(Options?.ThreadProfilerCallback),
             };
-        }
 
         public void Start()
         {

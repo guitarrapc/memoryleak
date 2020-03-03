@@ -61,12 +61,12 @@ namespace DiagnosticCore
         }
     }
 
-    public class GCEventListenerStat : IProfilerStat
+    public class GCEventStat : IProfilerStat
     {
         private GCEventListener listener;
         public Action<ChannelReader<GCStatistics>> ProfilerCallback { get; set; }
 
-        public GCEventListenerStat(Func<GCStatistics, Task> onGCDurationEvent)
+        public GCEventStat(Func<GCStatistics, Task> onGCDurationEvent)
         {
             listener = new GCEventListener(onGCDurationEvent);
         }
@@ -77,9 +77,42 @@ namespace DiagnosticCore
 
         public void Start()
         {
-            listener.RunWithCallback(eventData => listener.DefaultHandler(eventData), () =>
+            listener.RunWithCallback(eventData => listener.EventCreatedHandler(eventData), () =>
             {
-                Console.WriteLine($"Start: {nameof(GCEventListenerStat)}");
+                Console.WriteLine($"Start: {nameof(GCEventStat)}");
+            });
+        }
+
+        public void Stop()
+        {
+            listener.Stop();
+        }
+
+        public async Task ReadResultAsync(CancellationToken cancellationToken)
+        {
+            await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    public class ThreadEventStat : IProfilerStat
+    {
+        private ThreadEventListener listener;
+        public Action<ChannelReader<ThreadStatistics>> ProfilerCallback { get; set; }
+
+        public ThreadEventStat(Func<ThreadStatistics, Task> onGCDurationEvent)
+        {
+            listener = new ThreadEventListener(onGCDurationEvent);
+        }
+        public void Restart()
+        {
+            listener.Restart();
+        }
+
+        public void Start()
+        {
+            listener.RunWithCallback(eventData => listener.EventCreatedHandler(eventData), () =>
+            {
+                Console.WriteLine($"Start: {nameof(ThreadEventStat)}");
             });
         }
 

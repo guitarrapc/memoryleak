@@ -141,6 +141,6 @@ namespace DiagnosticCore.EventListeners
             Console.WriteLine("\n");
         }
 
-        public abstract void DefaultHandler(EventWrittenEventArgs eventData);
+        public abstract void EventCreatedHandler(EventWrittenEventArgs eventData);
     }
 }

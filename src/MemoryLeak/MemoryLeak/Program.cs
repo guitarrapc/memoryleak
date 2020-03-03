@@ -30,7 +30,8 @@ namespace MemoryLeak
             ProfilerTracker.Options = new ProfilerTrackerOptions
             {
                 CancellationToken = default,
-                GCDurationProfilerCallback = GCDurationProfilerCallback,
+                GCProfilerCallback = GCProfilerCallback,
+                ThreadProfilerCallback = ThreadProfilerCallback,
             };
 
             // start tracker
@@ -39,10 +40,14 @@ namespace MemoryLeak
             ProfilerTracker.Current.Value.Start();
         }
 
-        private static async Task GCDurationProfilerCallback(GCStatistics value)
+        private static async Task GCProfilerCallback(GCStatistics value)
         {
             // send metrics to datadog or any favor you like.
             Console.WriteLine($"GC Index {value.Index}; Gen {value.Generation}; Type {value.Type}; Duration {value.DurationMillsec}ms; Reason {value.Reason};");
+        }
+        private static async Task ThreadProfilerCallback(ThreadStatistics value)
+        {
+            Console.WriteLine($"Thread ActiveWrokerThreadCount {value.ActiveWrokerThreadCount}; RetiredWrokerThreadCount {value.RetiredWrokerThreadCount};");
         }
     }
 }
