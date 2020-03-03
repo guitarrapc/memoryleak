@@ -73,13 +73,13 @@ namespace MemoryLeak.Controllers
         [HttpGet("startdumptracker")]
         public ActionResult StartDumpTracker()
         {
-            ProfilerTracker.Current.Restart();
+            ProfilerTracker.Current.Value.Restart();
             return Ok();
         }
         [HttpGet("stopdumptracker")]
         public ActionResult StopDumpTracker()
         {
-            ProfilerTracker.Current.Stop();
+            ProfilerTracker.Current.Value.Stop();
             return Ok();
         }
 

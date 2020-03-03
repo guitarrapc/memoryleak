@@ -1,32 +1,40 @@
-﻿using System.Linq;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using DiagnosticCore.EventListeners;
 
 namespace DiagnosticCore
 {
+    public class ProfilerTrackerOptions
+    {
+        public CancellationToken CancellationToken { get; set; }
+        public Func<GCDurationResult, Task> GCDurationProfilerCallback { get; set; }
+    }
     public class ProfilerTracker
     {
-        public static ProfilerTracker Current = new ProfilerTracker(System.Diagnostics.Process.GetCurrentProcess().Id);
-        
+        public static Lazy<ProfilerTracker> Current = new Lazy<ProfilerTracker>(() => new ProfilerTracker());
+
+        public static ProfilerTrackerOptions Options { get; set; } = new ProfilerTrackerOptions();
+
         private readonly int _processId;
         private readonly IProfilerStat[] profilerStats;
         private bool initialized;
 
-        public ProfilerTracker(int processId)
+        public ProfilerTracker()
         {
-            _processId = processId;
+            // list Stat
             profilerStats = new IProfilerStat[] {
-                //new CpuProfilerStat(_processId),
-                //new GCEventProfilerStat(_processId),
-                new GCEventListenerStat(),
+                new GCEventListenerStat(Options?.GCDurationProfilerCallback),
             };
         }
 
         public void Start()
         {
+            // TODO: Task.Run....
             foreach (var profile in profilerStats)
             {
-                var t = new Task(() => profile.Start());
-                t.Start();
+                var t = Task.Run(() => profile.Start());
+                profile.ReadResultAsync(Options.CancellationToken);
             }
             initialized = true;
         }

@@ -2,7 +2,7 @@
 {
     // wrapper of ClrTraceEventParser.Keywords
     // https://github.com/microsoft/perfview/blob/101984515958750f83063c117084eeec0866a19f/src/TraceEvent/Parsers/ClrTraceEventParser.cs#L36
-    enum ClrRuntimeEventKeywords : long
+    public enum ClrRuntimeEventKeywords : long
     {
         None = 0,
         /// <summary>

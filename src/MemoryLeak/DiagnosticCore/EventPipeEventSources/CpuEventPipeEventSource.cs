@@ -8,7 +8,7 @@ using Microsoft.Diagnostics.Tracing.Parsers;
 namespace DiagnosticCore.EventPipeEventSources
 {
     // https://github.com/dotnet/diagnostics/blob/b1f65150bb22ec96f56aaf3f0c6bb24c0b356a01/documentation/tutorial/src/triggerdump/Program.cs
-    internal class CpuEventPipeEventSource
+    public class CpuEventPipeEventSource
     {
         private readonly List<EventPipeProvider> providers;
         private readonly DiagnosticsClient client;

@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Diagnostics.Tracing;
+using System.Threading;
+using System.Threading.Channels;
+using System.Threading.Tasks;
 using DiagnosticCore.EventListeners;
 using DiagnosticCore.EventPipeEventSources;
 
@@ -10,8 +13,9 @@ namespace DiagnosticCore
         void Start();
         void Restart();
         void Stop();
+        Task ReadResultAsync(CancellationToken cancellationToken);
     }
-    internal class CpuProfilerStat : IProfilerStat
+    public class CpuProfilerStat : IProfilerStat
     {
         private readonly CpuEventPipeEventSource source;
         public CpuProfilerStat(int processId) => source= new CpuEventPipeEventSource(processId);
@@ -28,9 +32,13 @@ namespace DiagnosticCore
         {
             source.Stop();
         }
+        public Task ReadResultAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
     }
 
-    internal class GCEventProfilerStat : IProfilerStat
+    public class GCEventProfilerStat : IProfilerStat
     {
         private readonly GCEventPipeEventSource source;
         public GCEventProfilerStat(int processId) => source = new GCEventPipeEventSource(processId);
@@ -47,15 +55,20 @@ namespace DiagnosticCore
         {
             source.Stop();
         }
+        public Task ReadResultAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
     }
 
-    internal class GCEventListenerStat : IProfilerStat
+    public class GCEventListenerStat : IProfilerStat
     {
         private GCDurationEventListener listener;
+        public Action<ChannelReader<GCDurationResult>> ProfilerCallback { get; set; }
 
-        public GCEventListenerStat()
+        public GCEventListenerStat(Func<GCDurationResult, Task> onGCDurationEvent)
         {
-            listener = new GCDurationEventListener("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.GC);
+            listener = new GCDurationEventListener(onGCDurationEvent);
         }
         public void Restart()
         {
@@ -73,6 +86,11 @@ namespace DiagnosticCore
         public void Stop()
         {
             listener.Stop();
+        }
+
+        public async Task ReadResultAsync(CancellationToken cancellationToken)
+        {
+            await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }

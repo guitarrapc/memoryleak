@@ -8,7 +8,7 @@ using Microsoft.Diagnostics.Tracing.Parsers.Clr;
 
 namespace DiagnosticCore.EventPipeEventSources
 {
-    internal class GCEventPipeEventSource
+    public class GCEventPipeEventSource
     {
         private readonly List<EventPipeProvider> providers;
         private readonly DiagnosticsClient client;

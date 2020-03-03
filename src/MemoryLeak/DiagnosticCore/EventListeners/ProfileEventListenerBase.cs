@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 
 namespace DiagnosticCore.EventListeners
 {
-    internal abstract class ProfileEventListenerBase : EventListener
+    public abstract class ProfileEventListenerBase : EventListener
     {
+        protected bool Enabled = false;
+
         private readonly string _targetSourceName;
         private readonly Guid _targetSourceGuid;
         private readonly EventLevel _level;
@@ -103,28 +105,32 @@ namespace DiagnosticCore.EventListeners
 
         public void RunWithCallback(Action<EventWrittenEventArgs> handler, Action body)
         {
+            Enabled = true;
             _eventWritten = handler;
             body();
         }
         public async Task RunWithCallbackAsync(Action<EventWrittenEventArgs> handler, Func<Task> body)
         {
+            Enabled = true;
             _eventWritten = handler;
             await body().ConfigureAwait(false);
         }
 
         public virtual void Restart()
         {
+            Enabled = true;
             foreach (var enabled in _enabledEventtSourceList)
                 EnableEvents(enabled, EventLevel.Informational, _keywords);
         }
 
         public virtual void Stop()
         {
+            Enabled = false;
             foreach (var enabled in _enabledEventtSourceList)
                 DisableEvents(enabled);
         }
 
-        public virtual void ShowEventDataDetailHandler(EventWrittenEventArgs eventData)
+        public virtual void DebugEventDataDetailHandler(EventWrittenEventArgs eventData)
         {
             Console.WriteLine($"ThreadID = {eventData.OSThreadId} ID = {eventData.EventId} Name = {eventData.EventName}");
             for (int i = 0; i < eventData.Payload.Count; i++)
