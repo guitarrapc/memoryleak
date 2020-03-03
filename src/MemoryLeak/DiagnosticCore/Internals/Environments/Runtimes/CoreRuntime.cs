@@ -10,7 +10,7 @@ using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
 using DiagnosticCore.Portability;
 
-namespace DiagnosticCore.Environments.Runtimes
+namespace DiagnosticCore.Internals.Environments.Runtimes
 {
     // https://github.com/dotnet/BenchmarkDotNet/blob/a08062fa473e3426c7d5f1a1cf2ad5cbbc46f7d1/src/BenchmarkDotNet/Environments/Runtimes/CoreRuntime.cs
     public class CoreRuntime : Runtime

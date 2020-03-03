@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using BenchmarkDotNet.Horology;
 using BenchmarkDotNet.Portability.Cpu;
-using DiagnosticCore.Helpers;
+using DiagnosticCore.Internals.Helpers;
 
-namespace DiagnosticCore.Portability.Cpu
+namespace DiagnosticCore.Internals.Portability.Cpu
 {
     // https://github.com/dotnet/BenchmarkDotNet/blob/2ba30330ec5ec8a9abe284c927277a6fe0fc5a0c/src/BenchmarkDotNet/Portability/Cpu/WmicCpuInfoParser.cs
     internal static class WmicCpuInfoParser

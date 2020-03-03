@@ -6,7 +6,7 @@ using System.Text;
 using BenchmarkDotNet.Horology;
 using BenchmarkDotNet.Portability.Cpu;
 
-namespace DiagnosticCore.Portability.Cpu
+namespace DiagnosticCore.Internals.Portability.Cpu
 {
     // https://github.com/dotnet/BenchmarkDotNet/blob/61cc5654ddc7ce97cb8f374f9bf94388193a9a8c/src/BenchmarkDotNet/Portability/Cpu/MosCpuInfoProvider.cs
     internal static class MosCpuInfoProvider

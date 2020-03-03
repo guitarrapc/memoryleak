@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace DiagnosticCore.Helpers
+namespace DiagnosticCore.Internals.Helpers
 {
     // https://github.com/dotnet/BenchmarkDotNet/blob/df6f915886788cadd70d8f43c4d9873c1ad9f1d1/src/BenchmarkDotNet/Helpers/SectionsHelper.cs
     internal static class SectionsHelper

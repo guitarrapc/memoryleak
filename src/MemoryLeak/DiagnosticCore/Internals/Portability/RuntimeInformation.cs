@@ -12,12 +12,12 @@ using BenchmarkDotNet.Extensions;
 using BenchmarkDotNet.Helpers;
 using BenchmarkDotNet.Portability;
 using BenchmarkDotNet.Portability.Cpu;
-using DiagnosticCore.Portability.Cpu;
-using DiagnosticCore.Extensions;
-using DiagnosticCore.Helpers;
 using Microsoft.Win32;
 using static System.Runtime.InteropServices.RuntimeInformation;
 using RuntimeEnvironment = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment;
+using DiagnosticCore.Internals.Extensions;
+using DiagnosticCore.Internals.Helpers;
+using DiagnosticCore.Internals.Portability.Cpu;
 
 namespace DiagnosticCore.Portability
 {
@@ -146,7 +146,7 @@ namespace DiagnosticCore.Portability
             }
             else if (IsNetCore)
             {
-                string runtimeVersion = DiagnosticCore.Environments.Runtimes.CoreRuntime.TryGetVersion(out var version) ? version.ToString() : "?";
+                string runtimeVersion = Internals.Environments.Runtimes.CoreRuntime.TryGetVersion(out var version) ? version.ToString() : "?";
 
                 var coreclrAssemblyInfo = FileVersionInfo.GetVersionInfo(typeof(object).GetTypeInfo().Assembly.Location);
                 var corefxAssemblyInfo = FileVersionInfo.GetVersionInfo(typeof(Regex).GetTypeInfo().Assembly.Location);
@@ -167,11 +167,11 @@ namespace DiagnosticCore.Portability
             if (IsMono)
                 return MonoRuntime.Default;
             if (IsFullFramework)
-                return DiagnosticCore.Environments.Runtimes.ClrRuntime.GetCurrentVersion();
+                return Internals.Environments.Runtimes.ClrRuntime.GetCurrentVersion();
             if (IsNetCore)
-                return DiagnosticCore.Environments.Runtimes.CoreRuntime.GetCurrentVersion();
+                return Internals.Environments.Runtimes.CoreRuntime.GetCurrentVersion();
             if (IsCoreRT)
-                return DiagnosticCore.Environments.Runtimes.CoreRtRuntime.GetCurrentVersion();
+                return Internals.Environments.Runtimes.CoreRtRuntime.GetCurrentVersion();
 
             throw new NotSupportedException("Unknown .NET Runtime");
         }
