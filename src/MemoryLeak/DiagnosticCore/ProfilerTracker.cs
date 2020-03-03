@@ -17,7 +17,8 @@ namespace DiagnosticCore
             profilerStats = new IProfilerStat[] {
                 new CpuProfilerStat(_processId),
                 new GCEventProfilerStat(_processId),
-                new EventListenerStat(EventListeners.ClrRuntimeEventKeywords.GC),
+                //new EventListenerStat(EventListeners.ClrRuntimeEventKeywords.GC),
+                new ProfilerEventListenerStat("Microsoft-Windows-DotNETRuntime", EventListeners.ClrRuntimeEventKeywords.GC),
             };
         }
 
