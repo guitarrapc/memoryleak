@@ -65,13 +65,13 @@ namespace DiagnosticCore.EventListeners
 
         public override void EventCreatedHandler(EventWrittenEventArgs eventData)
         {
-            if (eventData.EventName.StartsWith("GCStart_")) // GCStart_V1 / V2 ...
+            if (eventData.EventName.StartsWith("GCStart_", StringComparison.OrdinalIgnoreCase)) // GCStart_V1 / V2 ...
             {
                 timeGCStart = eventData.TimeStamp.Ticks;
                 reason = uint.Parse(eventData.Payload[2].ToString());
                 type = uint.Parse(eventData.Payload[3].ToString());
             }
-            else if (eventData.EventName.StartsWith("GCEnd_")) // GCEnd_V1 / V2 ...
+            else if (eventData.EventName.StartsWith("GCEnd_", StringComparison.OrdinalIgnoreCase)) // GCEnd_V1 / V2 ...
             {
                 long timeGCEnd = eventData.TimeStamp.Ticks;
                 var gcIndex = uint.Parse(eventData.Payload[0].ToString());

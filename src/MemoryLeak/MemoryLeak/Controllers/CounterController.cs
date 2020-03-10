@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MemoryLeak.Controllers
 {
@@ -80,6 +82,17 @@ namespace MemoryLeak.Controllers
         public ActionResult StopDumpTracker()
         {
             ProfilerTracker.Current.Value.Stop();
+            return Ok();
+        }
+
+        [HttpGet("thread/{count}")]
+        public async Task<ActionResult> StartThread(int count = 100_000)
+        {
+            // start Threads in threadpool
+            var tasks = Enumerable.Range(1, count)
+                        .Select(x => Task.Run(() => 1))
+                        .ToArray();
+            Task.WaitAll(tasks); 
             return Ok();
         }
 

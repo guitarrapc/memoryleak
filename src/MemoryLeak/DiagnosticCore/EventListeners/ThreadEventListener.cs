@@ -10,7 +10,8 @@ namespace DiagnosticCore.EventListeners
     public enum ThreadStatisticType
     {
         ThreadWorker,
-        ThreaddAdjustment,
+        ThreadAdjustment,
+        IOThread,
     }
     /// <summary>
     /// Data structure represent WorkerThreadPool statistics
@@ -20,21 +21,44 @@ namespace DiagnosticCore.EventListeners
         public ThreadStatisticType Type { get; set; }
         public ThreadWorkerStatistics ThreadWorker { get; set; }
         public ThreadAdjustmentStatistics ThreadAdjustment { get; set; }
+        public IOThreadStatistics IOThread { get; set; }
     }
 
     public struct ThreadWorkerStatistics
     {
         public long Time { get; set; }
-        public uint ActiveWrokerThreadCount { get; set; }
-        public uint RetiredWrokerThreadCount { get; set; }
+        /// <summary>
+        /// Number of worker threads available to process work, including those that are already processing work.
+        /// </summary>
+        public uint ActiveWrokerThreads { get; set; }
+        /// <summary>
+        /// Number of worker threads that are not available to process work, but that are being held in reserve in case more threads are needed later.
+        /// </summary>
+        public uint RetiredWrokerThreads { get; set; }
+        /// <summary>
+        /// Using WorkerThreads count
+        /// </summary>
+        public int WorkerThreads { get; set; }
+        /// <summary>
+        /// Using Asynchronous IO Thread count
+        /// </summary>
+        public int CompletionPortThreads { get; set; }
     }
 
+    public struct IOThreadStatistics
+    {
+        public long Time { get; set; }
+        public uint Count { get; set; }
+        public uint RetiredIOThreads { get; set; }
+    }
 
     public struct ThreadAdjustmentStatistics
     {
         public long Time { get; set; }
         public double AverageThrouput { get; set; }
-        public uint NewWorkerThreadCount { get; set; }
+
+        //public uint NewWorkerThreads { get; set; }
+
         /// <summary>
         /// Reason	win:UInt32	Reason for the adjustment.
         /// 0x00 - Warmup.
@@ -57,6 +81,8 @@ namespace DiagnosticCore.EventListeners
     {
         private readonly Channel<ThreadStatistics> _channel;
         private readonly Func<ThreadStatistics, Task> _onGCDurationEvent;
+        private readonly int _maxWorkerThreads;
+        private readonly int _maxCompletionPortThreads;
 
         public ThreadEventListener(Func<ThreadStatistics, Task> onGCDurationEvent) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.Threading)
         {
@@ -68,35 +94,46 @@ namespace DiagnosticCore.EventListeners
                 FullMode = BoundedChannelFullMode.DropOldest,
             };
             _channel = Channel.CreateBounded<ThreadStatistics>(channelOption);
+
+            ThreadPool.GetMaxThreads(out _maxWorkerThreads, out _maxCompletionPortThreads);
         }
 
         public override void EventCreatedHandler(EventWrittenEventArgs eventData)
         {
-            if (eventData.EventName == "ThreadPoolWorkerThreadWait") return;
-            if (eventData.EventName == "ThreadPoolWorkerThreadAdjustmentAdjustment")
+            if (eventData.EventName.Equals("ThreadPoolWorkerThreadWait", StringComparison.OrdinalIgnoreCase)) return;
+            if (eventData.EventName.Equals("ThreadPoolWorkerThreadAdjustmentAdjustment", StringComparison.OrdinalIgnoreCase))
             {
                 long time = eventData.TimeStamp.Ticks;
                 var averageThroughput = double.Parse(eventData.Payload[0].ToString());
-                var newWorkerThreadCount = uint.Parse(eventData.Payload[1].ToString());
+                // non consistence value returns. ignore it.
+                //var newWorkerThreadCount = uint.Parse(eventData.Payload[1].ToString());
                 var reason = uint.Parse(eventData.Payload[2].ToString());
                 // write to channel
                 _channel.Writer.TryWrite(new ThreadStatistics
                 {
-                    Type = ThreadStatisticType.ThreaddAdjustment,
+                    Type = ThreadStatisticType.ThreadAdjustment,
                     ThreadAdjustment = new ThreadAdjustmentStatistics
                     {
                         Time = time,
                         AverageThrouput = averageThroughput,
-                        NewWorkerThreadCount = newWorkerThreadCount,
                         Reason = reason,
                     },
                 });
             }
-            else if (eventData.EventName.StartsWith("ThreadPoolWorkerThreadStart")) 
+            else if (eventData.EventName.StartsWith("ThreadPoolWorkerThreadStart", StringComparison.OrdinalIgnoreCase) 
+                || eventData.EventName.StartsWith("ThreadPoolWorkerThreadStop", StringComparison.OrdinalIgnoreCase))
             {
                 long time = eventData.TimeStamp.Ticks;
                 var activeWrokerThreadCount = uint.Parse(eventData.Payload[0].ToString());
                 var retiredWrokerThreadCount = uint.Parse(eventData.Payload[1].ToString());
+
+                // get threadpool statistics
+                ThreadPool.GetAvailableThreads(out var worker, out var completion);
+                var workerThreads = _maxWorkerThreads - worker;
+                var completionPortThreads = _maxCompletionPortThreads - completion;
+
+                // todo: get threadpool property `ThreadPool.ThreadCount`? https://github.com/dotnet/corefx/pull/37401/files
+
                 // write to channel
                 _channel.Writer.TryWrite(new ThreadStatistics
                 {
@@ -104,8 +141,28 @@ namespace DiagnosticCore.EventListeners
                     ThreadWorker = new ThreadWorkerStatistics
                     {
                         Time = time,
-                        ActiveWrokerThreadCount = activeWrokerThreadCount,
-                        RetiredWrokerThreadCount = retiredWrokerThreadCount,
+                        ActiveWrokerThreads = activeWrokerThreadCount,
+                        RetiredWrokerThreads = retiredWrokerThreadCount,
+                        WorkerThreads = workerThreads,
+                        CompletionPortThreads = completionPortThreads,
+                    },
+                });
+            }
+            else if (eventData.EventName.StartsWith("IOThreadCreate_", StringComparison.OrdinalIgnoreCase) 
+                || eventData.EventName.StartsWith("IOThreadTerminate_", StringComparison.OrdinalIgnoreCase) 
+                || eventData.EventName.StartsWith("IOThreadRetire)_", StringComparison.OrdinalIgnoreCase))
+            {
+                long time = eventData.TimeStamp.Ticks;
+                var count = uint.Parse(eventData.Payload[0].ToString());
+                var retiredCount = uint.Parse(eventData.Payload[1].ToString());
+                _channel.Writer.TryWrite(new ThreadStatistics
+                {
+                    Type = ThreadStatisticType.IOThread,
+                    IOThread = new IOThreadStatistics
+                    {
+                        Time = time,
+                        Count = count,
+                        RetiredIOThreads = retiredCount,
                     },
                 });
             }

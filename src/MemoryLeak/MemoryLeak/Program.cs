@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DiagnosticCore;
 using DiagnosticCore.EventListeners;
@@ -27,6 +29,8 @@ namespace MemoryLeak
 
         private static void EnableTracker()
         {
+            //ThreadPool.SetMinThreads(Environment.ProcessorCount * 1000, 1000);
+
             // start tracker
             AllocationTracker<GcStats>.Current.Start();
             ThreadingTracker<ThreadingStats>.Current.Start();
@@ -49,11 +53,16 @@ namespace MemoryLeak
         {
             if (value.Type == ThreadStatisticType.ThreadWorker)
             {
-                Console.WriteLine($"Thread ActiveWrokerThreadCount {value.ThreadWorker.ActiveWrokerThreadCount}; RetiredWrokerThreadCount {value.ThreadWorker.RetiredWrokerThreadCount};");
+                Console.WriteLine($"Thread ActiveWrokerThreads {value.ThreadWorker.ActiveWrokerThreads}; RetiredWrokerThreads {value.ThreadWorker.RetiredWrokerThreads}; WorkerThreads {value.ThreadWorker.WorkerThreads}; CompletionPortThreads {value.ThreadWorker.CompletionPortThreads}");
+                //Console.WriteLine($"ThreadInfo ThreadCount {ThreadPool.ThreadCount}; CompletedWorkItemCount {ThreadPool.CompletedWorkItemCount}; PendingWorkItemCount {ThreadPool.PendingWorkItemCount}");
             }
-            else if (value.Type == ThreadStatisticType.ThreaddAdjustment)
+            else if (value.Type == ThreadStatisticType.ThreadAdjustment)
             {
-                Console.WriteLine($"Thread Adjustment Reason {value.ThreadAdjustment.Reason}; AverageThrouput {value.ThreadAdjustment.AverageThrouput}; NewWorkerThreadCount {value.ThreadAdjustment.NewWorkerThreadCount}");
+                Console.WriteLine($"ThreadAdjustment Reason {value.ThreadAdjustment.Reason}; AverageThrouput {value.ThreadAdjustment.AverageThrouput};");
+            }
+            else if (value.Type == ThreadStatisticType.IOThread)
+            {
+                Console.WriteLine($"IOThreads {value.IOThread.Count}; RetiredIOThreads {value.IOThread.RetiredIOThreads};");
             }
         }
     }
