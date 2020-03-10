@@ -42,26 +42,34 @@ namespace MemoryLeak
                 GCProfilerCallback = GCProfilerCallback,
                 ThreadProfilerCallback = ThreadProfilerCallback,
                 ContentionProfilerCallback = ContentionProfilerCallback,
+                TimerThreadInfoCallback = TimerThreadInfoCallback,
             };
             ProfilerTracker.Current.Value.Start();
         }
 
-        // GC
-        // ThreadPool
-        // Heap+
-        // 
-        private static Task GCProfilerCallback(GCStatistics arg)
+        // TODO: Heap memory
+
+        /// <summary>
+        /// GC
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        private static Task GCProfilerCallback(EtwGCStatistics arg)
         {
             // send metrics to datadog or any favor you like.
             Console.WriteLine($"GC Index {arg.Index}; Gen {arg.Generation}; Type {arg.Type}; Duration {arg.DurationMillsec}ms; Reason {arg.Reason};");
-
             return Task.CompletedTask;
         }
-        private static Task ThreadProfilerCallback(ThreadPoolStatistics arg)
+        /// <summary>
+        /// Thread
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        private static Task ThreadProfilerCallback(EtwThreadPoolStatistics arg)
         {
             if (arg.Type == ThreadPoolStatisticType.ThreadWorker)
             {
-                Console.WriteLine($"Thread ActiveWrokerThreads {arg.ThreadWorker.ActiveWrokerThreads}; RetiredWrokerThreads {arg.ThreadWorker.RetiredWrokerThreads}; WorkerThreads {arg.ThreadWorker.WorkerThreads}; CompletionPortThreads {arg.ThreadWorker.CompletionPortThreads}");
+                Console.WriteLine($"Thread ActiveWrokerThreads {arg.ThreadWorker.ActiveWrokerThreads}; RetiredWrokerThreads {arg.ThreadWorker.RetiredWrokerThreads};");
             }
             else if (arg.Type == ThreadPoolStatisticType.ThreadAdjustment)
             {
@@ -75,10 +83,25 @@ namespace MemoryLeak
             return Task.CompletedTask;
         }
 
-        private static Task ContentionProfilerCallback(ContentionStatistics arg)
+        /// <summary>
+        /// Contention
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        private static Task ContentionProfilerCallback(EtwContentionStatistics arg)
         {
             Console.WriteLine($"Contention Flag {arg.Flag}; DurationNs {arg.DurationNs}");
+            return Task.CompletedTask;
+        }
 
+        /// <summary>
+        /// ThreadInfo
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        private static Task TimerThreadInfoCallback(TimerThreadInfoStatistics arg)
+        {
+            Console.WriteLine($"ThreadInfo AvailableWorkerThreads {arg.AvailableWorkerThreads}; MaxWorkerThreads {arg.MaxWorkerThreads};");
             return Task.CompletedTask;
         }
     }

@@ -13,7 +13,7 @@ namespace DiagnosticCore.Statistics
     /// <summary>
     /// Data structure represent WorkerThreadPool statistics
     /// </summary>
-    public struct ThreadPoolStatistics
+    public struct EtwThreadPoolStatistics
     {
         public ThreadPoolStatisticType Type { get; set; }
         public ThreadWorkerStatistics ThreadWorker { get; set; }
@@ -32,14 +32,6 @@ namespace DiagnosticCore.Statistics
         /// Number of worker threads that are not available to process work, but that are being held in reserve in case more threads are needed later.
         /// </summary>
         public uint RetiredWrokerThreads { get; set; }
-        /// <summary>
-        /// Using WorkerThreads count
-        /// </summary>
-        public int WorkerThreads { get; set; }
-        /// <summary>
-        /// Using Asynchronous IO Thread count
-        /// </summary>
-        public int CompletionPortThreads { get; set; }
     }
 
     public struct IOThreadStatistics

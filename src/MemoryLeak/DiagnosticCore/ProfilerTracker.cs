@@ -12,15 +12,19 @@ namespace DiagnosticCore
         /// <summary>
         /// Callback invoke when GC Event emitted
         /// </summary>
-        public Func<GCStatistics, Task> GCProfilerCallback { get; set; }
+        public Func<EtwGCStatistics, Task> GCProfilerCallback { get; set; }
         /// <summary>
         /// Callback invoke when ThreadPool Event emitted
         /// </summary>
-        public Func<ThreadPoolStatistics, Task> ThreadProfilerCallback { get; set; }
+        public Func<EtwThreadPoolStatistics, Task> ThreadProfilerCallback { get; set; }
         /// <summary>
         /// Callback invoke when Contention Event emitted (generally lock event)
         /// </summary>
-        public Func<ContentionStatistics, Task> ContentionProfilerCallback { get; set; }
+        public Func<EtwContentionStatistics, Task> ContentionProfilerCallback { get; set; }
+        /// <summary>
+        /// Callback invoke when Timer ThreadInfo Event emitted.
+        /// </summary>
+        public Func<TimerThreadInfoStatistics, Task> TimerThreadInfoCallback { get; set; }
     }
 
     public class ProfilerTracker
@@ -43,6 +47,7 @@ namespace DiagnosticCore
                 new GCEventStat(Options?.GCProfilerCallback),
                 new ThreadPoolEventStat(Options?.ThreadProfilerCallback),
                 new ContentionEventStat(Options?.ContentionProfilerCallback),
+                new TimerThreadInfoStat(Options?.TimerThreadInfoCallback)
             };
 
         public void Start()

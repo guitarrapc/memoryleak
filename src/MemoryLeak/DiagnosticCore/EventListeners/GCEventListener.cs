@@ -9,18 +9,18 @@ using DiagnosticCore.Statistics;
 namespace DiagnosticCore.EventListeners
 {
     /// <summary>
-    /// EventListener to collect Garbage Collection events. <see cref="GCStatistics"/>.
+    /// EventListener to collect Garbage Collection events. <see cref="EtwGCStatistics"/>.
     /// https://docs.microsoft.com/en-us/dotnet/framework/performance/garbage-collection-etw-events
     /// </summary>
     public class GCEventListener : ProfileEventListenerBase, IChannelReader
     {
-        private readonly Channel<GCStatistics> _channel;
-        private readonly Func<GCStatistics, Task> _onEventEmit;
+        private readonly Channel<EtwGCStatistics> _channel;
+        private readonly Func<EtwGCStatistics, Task> _onEventEmit;
         long timeGCStart = 0;
         uint reason = 0;
         uint type = 0;
 
-        public GCEventListener(Func<GCStatistics, Task> onEventEmit) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.GC)
+        public GCEventListener(Func<EtwGCStatistics, Task> onEventEmit) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.GC)
         {
             _onEventEmit = onEventEmit;
             var channelOption = new BoundedChannelOptions(50)
@@ -29,7 +29,7 @@ namespace DiagnosticCore.EventListeners
                 SingleWriter = true,
                 FullMode = BoundedChannelFullMode.DropOldest,
             };
-            _channel = Channel.CreateBounded<GCStatistics>(channelOption);
+            _channel = Channel.CreateBounded<EtwGCStatistics>(channelOption);
         }
 
         public override void EventCreatedHandler(EventWrittenEventArgs eventData)
@@ -48,7 +48,7 @@ namespace DiagnosticCore.EventListeners
                 var duration = (double)(timeGCEnd - timeGCStart) / 10.0 / 1000.0;
 
                 // write to channel
-                _channel.Writer.TryWrite(new GCStatistics
+                _channel.Writer.TryWrite(new EtwGCStatistics
                 {
                     Index = gcIndex,
                     Type = type,

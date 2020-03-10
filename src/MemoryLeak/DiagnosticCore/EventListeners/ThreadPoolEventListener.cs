@@ -14,10 +14,10 @@ namespace DiagnosticCore.EventListeners
     /// <remarks>payload: https://docs.microsoft.com/en-us/dotnet/framework/performance/thread-pool-etw-events </remarks>
     public class ThreadPoolEventListener : ProfileEventListenerBase, IChannelReader
     {
-        private readonly Channel<ThreadPoolStatistics> _channel;
-        private readonly Func<ThreadPoolStatistics, Task> _onEventEmit;
+        private readonly Channel<EtwThreadPoolStatistics> _channel;
+        private readonly Func<EtwThreadPoolStatistics, Task> _onEventEmit;
 
-        public ThreadPoolEventListener(Func<ThreadPoolStatistics, Task> onEventEmit) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.Threading)
+        public ThreadPoolEventListener(Func<EtwThreadPoolStatistics, Task> onEventEmit) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.Threading)
         {
             _onEventEmit = onEventEmit;
             var channelOption = new BoundedChannelOptions(50)
@@ -26,7 +26,7 @@ namespace DiagnosticCore.EventListeners
                 SingleWriter = true,
                 FullMode = BoundedChannelFullMode.DropOldest,
             };
-            _channel = Channel.CreateBounded<ThreadPoolStatistics>(channelOption);
+            _channel = Channel.CreateBounded<EtwThreadPoolStatistics>(channelOption);
         }
 
         public override void EventCreatedHandler(EventWrittenEventArgs eventData)
@@ -40,7 +40,7 @@ namespace DiagnosticCore.EventListeners
                 //var newWorkerThreadCount = uint.Parse(eventData.Payload[1].ToString());
                 var reason = uint.Parse(eventData.Payload[2].ToString());
                 // write to channel
-                _channel.Writer.TryWrite(new ThreadPoolStatistics
+                _channel.Writer.TryWrite(new EtwThreadPoolStatistics
                 {
                     Type = ThreadPoolStatisticType.ThreadAdjustment,
                     ThreadAdjustment = new ThreadAdjustmentStatistics
@@ -58,16 +58,8 @@ namespace DiagnosticCore.EventListeners
                 var activeWrokerThreadCount = uint.Parse(eventData.Payload[0].ToString());
                 var retiredWrokerThreadCount = uint.Parse(eventData.Payload[1].ToString());
 
-                // get threadpool statistics
-                ThreadPool.GetMaxThreads(out var maxWorkerThreads, out var maxCompletionPortThreads);
-                ThreadPool.GetAvailableThreads(out var worker, out var completion);
-                var workerThreads = maxWorkerThreads - worker;
-                var completionPortThreads = maxCompletionPortThreads - completion;
-
-                // todo: get threadpool property `ThreadPool.ThreadCount`? https://github.com/dotnet/corefx/pull/37401/files
-
                 // write to channel
-                _channel.Writer.TryWrite(new ThreadPoolStatistics
+                _channel.Writer.TryWrite(new EtwThreadPoolStatistics
                 {
                     Type = ThreadPoolStatisticType.ThreadWorker,
                     ThreadWorker = new ThreadWorkerStatistics
@@ -75,8 +67,6 @@ namespace DiagnosticCore.EventListeners
                         Time = time,
                         ActiveWrokerThreads = activeWrokerThreadCount,
                         RetiredWrokerThreads = retiredWrokerThreadCount,
-                        WorkerThreads = workerThreads,
-                        CompletionPortThreads = completionPortThreads,
                     },
                 });
             }
@@ -87,7 +77,7 @@ namespace DiagnosticCore.EventListeners
                 long time = eventData.TimeStamp.Ticks;
                 var count = uint.Parse(eventData.Payload[0].ToString());
                 var retiredCount = uint.Parse(eventData.Payload[1].ToString());
-                _channel.Writer.TryWrite(new ThreadPoolStatistics
+                _channel.Writer.TryWrite(new EtwThreadPoolStatistics
                 {
                     Type = ThreadPoolStatisticType.IOThread,
                     IOThread = new IOThreadStatistics

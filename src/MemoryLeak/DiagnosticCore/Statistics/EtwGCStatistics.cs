@@ -7,7 +7,7 @@ namespace DiagnosticCore.Statistics
     /// <summary>
     /// Data structure represent GC statistics
     /// </summary>
-    public struct GCStatistics
+    public struct EtwGCStatistics
     {
         public uint Index { get; set; }
         /// <summary>

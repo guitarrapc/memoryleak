@@ -5,6 +5,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using DiagnosticCore.EventListeners;
 using DiagnosticCore.Statistics;
+using DiagnosticCore.TimerListeners;
 
 namespace DiagnosticCore
 {
@@ -18,9 +19,8 @@ namespace DiagnosticCore
     public class GCEventStat : IProfilerStat
     {
         private readonly GCEventListener listener;
-        public Action<ChannelReader<GCStatistics>> ProfilerCallback { get; set; }
 
-        public GCEventStat(Func<GCStatistics, Task> onEventEmi)
+        public GCEventStat(Func<EtwGCStatistics, Task> onEventEmi)
         {
             listener = new GCEventListener(onEventEmi);
         }
@@ -51,9 +51,8 @@ namespace DiagnosticCore
     public class ThreadPoolEventStat : IProfilerStat
     {
         private readonly ThreadPoolEventListener listener;
-        public Action<ChannelReader<ThreadPoolStatistics>> ProfilerCallback { get; set; }
 
-        public ThreadPoolEventStat(Func<ThreadPoolStatistics, Task> onEventEmi)
+        public ThreadPoolEventStat(Func<EtwThreadPoolStatistics, Task> onEventEmi)
         {
             listener = new ThreadPoolEventListener(onEventEmi);
         }
@@ -84,9 +83,8 @@ namespace DiagnosticCore
     public class ContentionEventStat : IProfilerStat
     {
         private readonly ContentionEventListener listener;
-        public Action<ChannelReader<ContentionStatistics>> ProfilerCallback { get; set; }
 
-        public ContentionEventStat(Func<ContentionStatistics, Task> onEventEmi)
+        public ContentionEventStat(Func<EtwContentionStatistics, Task> onEventEmi)
         {
             listener = new ContentionEventListener(onEventEmi);
         }
@@ -116,24 +114,31 @@ namespace DiagnosticCore
 
     public class TimerThreadInfoStat : IProfilerStat
     {
-        public Task ReadResultAsync(CancellationToken cancellationToken)
+        private readonly ThreadInfoLTimerListener listener;
+
+        public TimerThreadInfoStat(Func<TimerThreadInfoStatistics, Task> onEventEmi)
         {
-            throw new NotImplementedException();
+            listener = new ThreadInfoLTimerListener(onEventEmi);
         }
 
         public void Restart()
         {
-            throw new NotImplementedException();
+            listener.Restart();
         }
 
         public void Start()
         {
-            
+            listener.Start();
         }
 
         public void Stop()
         {
-            throw new NotImplementedException();
+            listener.Stop();
+        }
+
+        public async Task ReadResultAsync(CancellationToken cancellationToken)
+        {
+            await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }
