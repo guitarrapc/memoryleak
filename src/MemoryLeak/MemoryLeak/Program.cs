@@ -32,10 +32,11 @@ namespace MemoryLeak
         {
             //ThreadPool.SetMinThreads(Environment.ProcessorCount * 1000, 1000);
 
-            // start tracker
+            // OutofProcess tracker
             AllocationTracker<GcStats>.Current.Start();
             ThreadingTracker<ThreadingStats>.Current.Start();
 
+            // InProcess tracker
             ProfilerTracker.Options = new ProfilerTrackerOptions
             {
                 CancellationToken = default,
