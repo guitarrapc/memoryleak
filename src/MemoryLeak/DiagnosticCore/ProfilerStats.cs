@@ -50,7 +50,7 @@ namespace DiagnosticCore
 
     public class ThreadPoolEventStat : IProfilerStat
     {
-        private ThreadPoolEventListener listener;
+        private readonly ThreadPoolEventListener listener;
         public Action<ChannelReader<ThreadPoolStatistics>> ProfilerCallback { get; set; }
 
         public ThreadPoolEventStat(Func<ThreadPoolStatistics, Task> onEventEmi)
