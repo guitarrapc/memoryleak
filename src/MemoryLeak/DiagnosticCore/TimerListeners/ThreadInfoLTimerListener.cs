@@ -41,6 +41,7 @@ namespace DiagnosticCore.TimerListeners
 
         protected override void OnEventWritten()
         {
+            // allow only 1 execution
             var count = Interlocked.Increment(ref initializedCount);
             if (count != 1) return;
 
