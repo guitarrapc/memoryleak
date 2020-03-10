@@ -4,95 +4,10 @@ using System.Diagnostics.Tracing;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using DiagnosticCore.Statistics;
 
 namespace DiagnosticCore.EventListeners
 {
-    public enum ThreadPoolStatisticType
-    {
-        ThreadWorker,
-        ThreadAdjustment,
-        IOThread,
-    }
-    /// <summary>
-    /// Data structure represent WorkerThreadPool statistics
-    /// </summary>
-    public struct ThreadPoolStatistics
-    {
-        public ThreadPoolStatisticType Type { get; set; }
-        public ThreadWorkerStatistics ThreadWorker { get; set; }
-        public ThreadAdjustmentStatistics ThreadAdjustment { get; set; }
-        public IOThreadStatistics IOThread { get; set; }
-
-        public override bool Equals(object obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override int GetHashCode()
-        {
-            throw new NotImplementedException();
-        }
-
-        public static bool operator ==(ThreadPoolStatistics left, ThreadPoolStatistics right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(ThreadPoolStatistics left, ThreadPoolStatistics right)
-        {
-            return !(left == right);
-        }
-    }
-
-    public struct ThreadWorkerStatistics
-    {
-        public long Time { get; set; }
-        /// <summary>
-        /// Number of worker threads available to process work, including those that are already processing work.
-        /// </summary>
-        public uint ActiveWrokerThreads { get; set; }
-        /// <summary>
-        /// Number of worker threads that are not available to process work, but that are being held in reserve in case more threads are needed later.
-        /// </summary>
-        public uint RetiredWrokerThreads { get; set; }
-        /// <summary>
-        /// Using WorkerThreads count
-        /// </summary>
-        public int WorkerThreads { get; set; }
-        /// <summary>
-        /// Using Asynchronous IO Thread count
-        /// </summary>
-        public int CompletionPortThreads { get; set; }
-    }
-
-    public struct IOThreadStatistics
-    {
-        public long Time { get; set; }
-        public uint Count { get; set; }
-        public uint RetiredIOThreads { get; set; }
-    }
-
-    public struct ThreadAdjustmentStatistics
-    {
-        public long Time { get; set; }
-        public double AverageThrouput { get; set; }
-
-        //public uint NewWorkerThreads { get; set; }
-
-        /// <summary>
-        /// Reason	win:UInt32	Reason for the adjustment.
-        /// 0x00 - Warmup.
-        /// 0x01 - Initializing.
-        /// 0x02 - Random move.
-        /// 0x03 - Climbing move.
-        /// 0x04 - Change point.
-        /// 0x05 - Stabilizing.
-        /// 0x06 - Starvation.
-        /// 0x07 - Thread timed out.
-        /// </summary>
-        public uint Reason { get; set; }
-    }
-
     /// <summary>
     /// EventListener to collect Thread events. <see cref="ThreadStatistics"/>.
     /// </summary>
@@ -101,8 +16,6 @@ namespace DiagnosticCore.EventListeners
     {
         private readonly Channel<ThreadPoolStatistics> _channel;
         private readonly Func<ThreadPoolStatistics, Task> _onEventEmit;
-        private readonly int _maxWorkerThreads;
-        private readonly int _maxCompletionPortThreads;
 
         public ThreadPoolEventListener(Func<ThreadPoolStatistics, Task> onEventEmit) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.Threading)
         {
@@ -114,8 +27,6 @@ namespace DiagnosticCore.EventListeners
                 FullMode = BoundedChannelFullMode.DropOldest,
             };
             _channel = Channel.CreateBounded<ThreadPoolStatistics>(channelOption);
-
-            ThreadPool.GetMaxThreads(out _maxWorkerThreads, out _maxCompletionPortThreads);
         }
 
         public override void EventCreatedHandler(EventWrittenEventArgs eventData)
@@ -148,9 +59,10 @@ namespace DiagnosticCore.EventListeners
                 var retiredWrokerThreadCount = uint.Parse(eventData.Payload[1].ToString());
 
                 // get threadpool statistics
+                ThreadPool.GetMaxThreads(out var maxWorkerThreads, out var maxCompletionPortThreads);
                 ThreadPool.GetAvailableThreads(out var worker, out var completion);
-                var workerThreads = _maxWorkerThreads - worker;
-                var completionPortThreads = _maxCompletionPortThreads - completion;
+                var workerThreads = maxWorkerThreads - worker;
+                var completionPortThreads = maxCompletionPortThreads - completion;
 
                 // todo: get threadpool property `ThreadPool.ThreadCount`? https://github.com/dotnet/corefx/pull/37401/files
 

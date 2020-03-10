@@ -5,20 +5,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using DiagnosticCore.Statistics;
 
 namespace DiagnosticCore.EventListeners
 {
-    public struct ContentionStatistics
-    {
-        public long Time { get; set; }
-        /// <summary>
-        /// 0 : managed.
-        /// 1 : native
-        /// </summary>
-        public byte Flag { get; set; }
-        public uint DurationNs { get; set; }
-    }
-
     /// <summary>
     /// Contention events are raised whenever there is contention for System.Threading.Monitor locks or native locks used by the runtime. 
     /// Contention occurs when a thread is waiting for a lock while another thread possesses the lock.

@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using DiagnosticCore.EventListeners;
+using DiagnosticCore.Statistics;
 
 namespace DiagnosticCore
 {

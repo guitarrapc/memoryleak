@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using DiagnosticCore.Oop;
 
 namespace MemoryLeak.Controllers
 {
@@ -34,7 +35,7 @@ namespace MemoryLeak.Controllers
     [ApiController]
     public class CounterController : ControllerBase
     {
-        private static Process _process = Process.GetCurrentProcess();
+        private static readonly Process _process = Process.GetCurrentProcess();
         private static TimeSpan _oldCPUTime = TimeSpan.Zero;
         private static DateTime _lastMonitorTime = DateTime.UtcNow;
         private static DateTime _lastRpsTime = DateTime.UtcNow;

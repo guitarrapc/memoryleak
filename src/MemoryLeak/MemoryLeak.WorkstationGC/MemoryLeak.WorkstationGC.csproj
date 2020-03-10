@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DiagnosticCore.Oop\DiagnosticCore.Oop.csproj" />
     <ProjectReference Include="..\DiagnosticCore\DiagnosticCore.csproj" />
   </ItemGroup>
 

@@ -1,7 +1,10 @@
-﻿namespace DiagnosticCore.EventListeners
+﻿using System;
+
+namespace DiagnosticCore.EventListeners
 {
     // wrapper of ClrTraceEventParser.Keywords
     // https://github.com/microsoft/perfview/blob/101984515958750f83063c117084eeec0866a19f/src/TraceEvent/Parsers/ClrTraceEventParser.cs#L36
+    [Flags]
     public enum ClrRuntimeEventKeywords : long
     {
         None = 0,

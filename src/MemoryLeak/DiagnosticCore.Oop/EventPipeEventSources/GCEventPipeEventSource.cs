@@ -4,11 +4,11 @@ using System.Diagnostics.Tracing;
 using Microsoft.Diagnostics.NETCore.Client;
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Parsers;
+using Microsoft.Diagnostics.Tracing.Parsers.Clr;
 
-namespace DiagnosticCore.EventPipeEventSources
+namespace DiagnosticCore.Oop.EventPipeEventSources
 {
-    // https://github.com/dotnet/diagnostics/blob/b1f65150bb22ec96f56aaf3f0c6bb24c0b356a01/documentation/tutorial/src/triggerdump/Program.cs
-    public class CpuEventPipeEventSource
+    public class GCEventPipeEventSource
     {
         private readonly List<EventPipeProvider> providers;
         private readonly DiagnosticsClient client;
@@ -16,17 +16,14 @@ namespace DiagnosticCore.EventPipeEventSources
         private EventPipeSession _session;
         private EventPipeEventSource _source;
 
-        public CpuEventPipeEventSource(int processId)
+        public GCEventPipeEventSource(int processId)
         {
             providers = new List<EventPipeProvider>()
             {
                 new EventPipeProvider(
-                    "System.Runtime",
+                    "Microsoft-Windows-DotNETRuntime",
                     EventLevel.Informational,
-                    (long)ClrTraceEventParser.Keywords.None,
-                    new Dictionary<string, string>() {
-                        { "EventCounterIntervalSec", "1" }
-                    }
+                    (long)ClrTraceEventParser.Keywords.GC
                 )
             };
 
@@ -62,22 +59,19 @@ namespace DiagnosticCore.EventPipeEventSources
 
         public void Stop()
         {
+            // source not yet triggered from session. GC not happen yet.
+            if (_source == null) return;
             // do not dispose source and session.
             _source.Dynamic.All -= Trigger;
         }
 
         private void Trigger(TraceEvent evt)
         {
-            if (evt.EventName.Equals("EventCounters"))
+            //Console.WriteLine(evt);
+            if (evt.EventName.Equals("GC/Triggered"))
             {
-                // todo: get type to avoid boxing.
-                IDictionary<string, object> payloadVal = (IDictionary<string, object>)(evt.PayloadValue(0));
-                IDictionary<string, object> payloadFields = (IDictionary<string, object>)(payloadVal["Payload"]);
-                if (payloadFields["Name"].ToString().Equals("cpu-usage"))
-                {
-                    double cpuUsage = Double.Parse(payloadFields["Mean"]?.ToString());
-                    Console.WriteLine("cpu usage: " + cpuUsage);
-                }
+                var gcEventData = (GCTriggeredTraceData)evt;
+                Console.WriteLine(gcEventData.Reason);
             }
         }
     }

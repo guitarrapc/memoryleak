@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using BenchmarkDotNet.Jobs;
 
 // https://github.com/dotnet/BenchmarkDotNet/blob/f86e13017e1dec5e063c77be8e2255fe0553ae4a/src/BenchmarkDotNet/Engines/GcStats.cs
-namespace DiagnosticCore
+namespace DiagnosticCore.Oop
 {
     public struct GcStats : IEquatable<GcStats>
     {

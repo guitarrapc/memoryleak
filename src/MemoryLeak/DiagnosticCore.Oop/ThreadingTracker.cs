@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DiagnosticCore
+namespace DiagnosticCore.Oop
 {
     public class ThreadingTracker<TStats> : ITracker<ThreadingStats>
     {

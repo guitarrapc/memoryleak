@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using DiagnosticCore.EventListeners;
-using DiagnosticCore.EventPipeEventSources;
+using DiagnosticCore.Statistics;
 
 namespace DiagnosticCore
 {
@@ -15,55 +15,9 @@ namespace DiagnosticCore
         void Stop();
         Task ReadResultAsync(CancellationToken cancellationToken);
     }
-    public class CpuProfilerStat : IProfilerStat
-    {
-        private readonly CpuEventPipeEventSource source;
-        public CpuProfilerStat(int processId) => source= new CpuEventPipeEventSource(processId);
-
-        public void Start()
-        {
-            source.Start();
-        }
-        public void Restart()
-        {
-            source.Restart();
-        }
-        public void Stop()
-        {
-            source.Stop();
-        }
-        public Task ReadResultAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
-    }
-
-    public class GCEventProfilerStat : IProfilerStat
-    {
-        private readonly GCEventPipeEventSource source;
-        public GCEventProfilerStat(int processId) => source = new GCEventPipeEventSource(processId);
-
-        public void Start()
-        {
-            source.Start();
-        }
-        public void Restart()
-        {
-            source.Restart();
-        }
-        public void Stop()
-        {
-            source.Stop();
-        }
-        public Task ReadResultAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
-    }
-
     public class GCEventStat : IProfilerStat
     {
-        private GCEventListener listener;
+        private readonly GCEventListener listener;
         public Action<ChannelReader<GCStatistics>> ProfilerCallback { get; set; }
 
         public GCEventStat(Func<GCStatistics, Task> onEventEmi)
@@ -129,7 +83,7 @@ namespace DiagnosticCore
 
     public class ContentionEventStat : IProfilerStat
     {
-        private ContentionEventListener listener;
+        private readonly ContentionEventListener listener;
         public Action<ChannelReader<ContentionStatistics>> ProfilerCallback { get; set; }
 
         public ContentionEventStat(Func<ContentionStatistics, Task> onEventEmi)
@@ -157,6 +111,29 @@ namespace DiagnosticCore
         public async Task ReadResultAsync(CancellationToken cancellationToken)
         {
             await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    public class TimerThreadInfoStat : IProfilerStat
+    {
+        public Task ReadResultAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Restart()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Start()
+        {
+            
+        }
+
+        public void Stop()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MemoryLeak.WorkstationGC", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diag", "Diag\Diag.csproj", "{08C8F803-D02F-42AF-97E6-34EAEC83C05D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiagnosticCore", "DiagnosticCore\DiagnosticCore.csproj", "{48C65261-FEEB-49ED-BBA4-DA8B0D655A81}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiagnosticCore", "DiagnosticCore\DiagnosticCore.csproj", "{48C65261-FEEB-49ED-BBA4-DA8B0D655A81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiagnosticCore.Oop", "DiagnosticCore.Oop\DiagnosticCore.Oop.csproj", "{8CAD9297-002E-43DF-A980-3F9098845D46}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{48C65261-FEEB-49ED-BBA4-DA8B0D655A81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48C65261-FEEB-49ED-BBA4-DA8B0D655A81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48C65261-FEEB-49ED-BBA4-DA8B0D655A81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CAD9297-002E-43DF-A980-3F9098845D46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CAD9297-002E-43DF-A980-3F9098845D46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CAD9297-002E-43DF-A980-3F9098845D46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CAD9297-002E-43DF-A980-3F9098845D46}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -6,7 +6,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DiagnosticCore;
-using DiagnosticCore.EventListeners;
+using DiagnosticCore.Oop;
+using DiagnosticCore.Statistics;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -45,6 +46,10 @@ namespace MemoryLeak
             ProfilerTracker.Current.Value.Start();
         }
 
+        // GC
+        // ThreadPool
+        // Heap+
+        // 
         private static Task GCProfilerCallback(GCStatistics arg)
         {
             // send metrics to datadog or any favor you like.
@@ -57,7 +62,6 @@ namespace MemoryLeak
             if (arg.Type == ThreadPoolStatisticType.ThreadWorker)
             {
                 Console.WriteLine($"Thread ActiveWrokerThreads {arg.ThreadWorker.ActiveWrokerThreads}; RetiredWrokerThreads {arg.ThreadWorker.RetiredWrokerThreads}; WorkerThreads {arg.ThreadWorker.WorkerThreads}; CompletionPortThreads {arg.ThreadWorker.CompletionPortThreads}");
-                //Console.WriteLine($"ThreadInfo ThreadCount {ThreadPool.ThreadCount}; CompletedWorkItemCount {ThreadPool.CompletedWorkItemCount}; PendingWorkItemCount {ThreadPool.PendingWorkItemCount}");
             }
             else if (arg.Type == ThreadPoolStatisticType.ThreadAdjustment)
             {
