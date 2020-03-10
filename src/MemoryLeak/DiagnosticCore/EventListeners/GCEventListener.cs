@@ -41,19 +41,19 @@ namespace DiagnosticCore.EventListeners
 
     /// <summary>
     /// EventListener to collect Garbage Collection events. <see cref="GCStatistics"/>.
+    /// https://docs.microsoft.com/en-us/dotnet/framework/performance/garbage-collection-etw-events
     /// </summary>
-    /// <remarks>payload: https://docs.microsoft.com/en-us/dotnet/framework/performance/garbage-collection-etw-events </remarks>
     public class GCEventListener : ProfileEventListenerBase, IChannelReader<GCStatistics>
     {
         private readonly Channel<GCStatistics> _channel;
-        private readonly Func<GCStatistics, Task> _onGCDurationEvent;
+        private readonly Func<GCStatistics, Task> _onEventEmit;
         long timeGCStart = 0;
         uint reason = 0;
         uint type = 0;
 
-        public GCEventListener(Func<GCStatistics, Task> onGCDurationEvent) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.GC)
+        public GCEventListener(Func<GCStatistics, Task> onEventEmit) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.GC)
         {
-            _onGCDurationEvent = onGCDurationEvent;
+            _onEventEmit = onEventEmit;
             var channelOption = new BoundedChannelOptions(50)
             {
                 SingleReader = true,
@@ -98,7 +98,7 @@ namespace DiagnosticCore.EventListeners
             {
                 while (Enabled && _channel.Reader.TryRead(out var value))
                 {
-                    await _onGCDurationEvent?.Invoke(value);
+                    await _onEventEmit?.Invoke(value);
                 }
             }
         }

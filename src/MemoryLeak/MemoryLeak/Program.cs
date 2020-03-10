@@ -40,30 +40,42 @@ namespace MemoryLeak
                 CancellationToken = default,
                 GCProfilerCallback = GCProfilerCallback,
                 ThreadProfilerCallback = ThreadProfilerCallback,
+                ContentionProfilerCallback = ContentionProfilerCallback,
             };
             ProfilerTracker.Current.Value.Start();
         }
 
-        private static async Task GCProfilerCallback(GCStatistics value)
+        private static Task GCProfilerCallback(GCStatistics arg)
         {
             // send metrics to datadog or any favor you like.
-            Console.WriteLine($"GC Index {value.Index}; Gen {value.Generation}; Type {value.Type}; Duration {value.DurationMillsec}ms; Reason {value.Reason};");
+            Console.WriteLine($"GC Index {arg.Index}; Gen {arg.Generation}; Type {arg.Type}; Duration {arg.DurationMillsec}ms; Reason {arg.Reason};");
+
+            return Task.CompletedTask;
         }
-        private static async Task ThreadProfilerCallback(ThreadStatistics value)
+        private static Task ThreadProfilerCallback(ThreadPoolStatistics arg)
         {
-            if (value.Type == ThreadStatisticType.ThreadWorker)
+            if (arg.Type == ThreadPoolStatisticType.ThreadWorker)
             {
-                Console.WriteLine($"Thread ActiveWrokerThreads {value.ThreadWorker.ActiveWrokerThreads}; RetiredWrokerThreads {value.ThreadWorker.RetiredWrokerThreads}; WorkerThreads {value.ThreadWorker.WorkerThreads}; CompletionPortThreads {value.ThreadWorker.CompletionPortThreads}");
+                Console.WriteLine($"Thread ActiveWrokerThreads {arg.ThreadWorker.ActiveWrokerThreads}; RetiredWrokerThreads {arg.ThreadWorker.RetiredWrokerThreads}; WorkerThreads {arg.ThreadWorker.WorkerThreads}; CompletionPortThreads {arg.ThreadWorker.CompletionPortThreads}");
                 //Console.WriteLine($"ThreadInfo ThreadCount {ThreadPool.ThreadCount}; CompletedWorkItemCount {ThreadPool.CompletedWorkItemCount}; PendingWorkItemCount {ThreadPool.PendingWorkItemCount}");
             }
-            else if (value.Type == ThreadStatisticType.ThreadAdjustment)
+            else if (arg.Type == ThreadPoolStatisticType.ThreadAdjustment)
             {
-                Console.WriteLine($"ThreadAdjustment Reason {value.ThreadAdjustment.Reason}; AverageThrouput {value.ThreadAdjustment.AverageThrouput};");
+                Console.WriteLine($"ThreadAdjustment Reason {arg.ThreadAdjustment.Reason}; AverageThrouput {arg.ThreadAdjustment.AverageThrouput};");
             }
-            else if (value.Type == ThreadStatisticType.IOThread)
+            else if (arg.Type == ThreadPoolStatisticType.IOThread)
             {
-                Console.WriteLine($"IOThreads {value.IOThread.Count}; RetiredIOThreads {value.IOThread.RetiredIOThreads};");
+                Console.WriteLine($"IOThreads {arg.IOThread.Count}; RetiredIOThreads {arg.IOThread.RetiredIOThreads};");
             }
+
+            return Task.CompletedTask;
+        }
+
+        private static Task ContentionProfilerCallback(ContentionStatistics arg)
+        {
+            Console.WriteLine($"Contention Flag {arg.Flag}; DurationNs {arg.DurationNs}");
+
+            return Task.CompletedTask;
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DiagnosticCore.EventListeners
 {
-    public enum ThreadStatisticType
+    public enum ThreadPoolStatisticType
     {
         ThreadWorker,
         ThreadAdjustment,
@@ -16,12 +16,32 @@ namespace DiagnosticCore.EventListeners
     /// <summary>
     /// Data structure represent WorkerThreadPool statistics
     /// </summary>
-    public struct ThreadStatistics
+    public struct ThreadPoolStatistics
     {
-        public ThreadStatisticType Type { get; set; }
+        public ThreadPoolStatisticType Type { get; set; }
         public ThreadWorkerStatistics ThreadWorker { get; set; }
         public ThreadAdjustmentStatistics ThreadAdjustment { get; set; }
         public IOThreadStatistics IOThread { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
+        }
+
+        public static bool operator ==(ThreadPoolStatistics left, ThreadPoolStatistics right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ThreadPoolStatistics left, ThreadPoolStatistics right)
+        {
+            return !(left == right);
+        }
     }
 
     public struct ThreadWorkerStatistics
@@ -77,23 +97,23 @@ namespace DiagnosticCore.EventListeners
     /// EventListener to collect Thread events. <see cref="ThreadStatistics"/>.
     /// </summary>
     /// <remarks>payload: https://docs.microsoft.com/en-us/dotnet/framework/performance/thread-pool-etw-events </remarks>
-    public class ThreadEventListener : ProfileEventListenerBase, IChannelReader<ThreadStatistics>
+    public class ThreadPoolEventListener : ProfileEventListenerBase, IChannelReader<ThreadPoolStatistics>
     {
-        private readonly Channel<ThreadStatistics> _channel;
-        private readonly Func<ThreadStatistics, Task> _onGCDurationEvent;
+        private readonly Channel<ThreadPoolStatistics> _channel;
+        private readonly Func<ThreadPoolStatistics, Task> _onEventEmit;
         private readonly int _maxWorkerThreads;
         private readonly int _maxCompletionPortThreads;
 
-        public ThreadEventListener(Func<ThreadStatistics, Task> onGCDurationEvent) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.Threading)
+        public ThreadPoolEventListener(Func<ThreadPoolStatistics, Task> onEventEmit) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.Threading)
         {
-            _onGCDurationEvent = onGCDurationEvent;
+            _onEventEmit = onEventEmit;
             var channelOption = new BoundedChannelOptions(50)
             {
                 SingleReader = true,
                 SingleWriter = true,
                 FullMode = BoundedChannelFullMode.DropOldest,
             };
-            _channel = Channel.CreateBounded<ThreadStatistics>(channelOption);
+            _channel = Channel.CreateBounded<ThreadPoolStatistics>(channelOption);
 
             ThreadPool.GetMaxThreads(out _maxWorkerThreads, out _maxCompletionPortThreads);
         }
@@ -109,9 +129,9 @@ namespace DiagnosticCore.EventListeners
                 //var newWorkerThreadCount = uint.Parse(eventData.Payload[1].ToString());
                 var reason = uint.Parse(eventData.Payload[2].ToString());
                 // write to channel
-                _channel.Writer.TryWrite(new ThreadStatistics
+                _channel.Writer.TryWrite(new ThreadPoolStatistics
                 {
-                    Type = ThreadStatisticType.ThreadAdjustment,
+                    Type = ThreadPoolStatisticType.ThreadAdjustment,
                     ThreadAdjustment = new ThreadAdjustmentStatistics
                     {
                         Time = time,
@@ -135,9 +155,9 @@ namespace DiagnosticCore.EventListeners
                 // todo: get threadpool property `ThreadPool.ThreadCount`? https://github.com/dotnet/corefx/pull/37401/files
 
                 // write to channel
-                _channel.Writer.TryWrite(new ThreadStatistics
+                _channel.Writer.TryWrite(new ThreadPoolStatistics
                 {
-                    Type = ThreadStatisticType.ThreadWorker,
+                    Type = ThreadPoolStatisticType.ThreadWorker,
                     ThreadWorker = new ThreadWorkerStatistics
                     {
                         Time = time,
@@ -155,9 +175,9 @@ namespace DiagnosticCore.EventListeners
                 long time = eventData.TimeStamp.Ticks;
                 var count = uint.Parse(eventData.Payload[0].ToString());
                 var retiredCount = uint.Parse(eventData.Payload[1].ToString());
-                _channel.Writer.TryWrite(new ThreadStatistics
+                _channel.Writer.TryWrite(new ThreadPoolStatistics
                 {
-                    Type = ThreadStatisticType.IOThread,
+                    Type = ThreadPoolStatisticType.IOThread,
                     IOThread = new IOThreadStatistics
                     {
                         Time = time,
@@ -175,7 +195,7 @@ namespace DiagnosticCore.EventListeners
             {
                 while (Enabled && _channel.Reader.TryRead(out var value))
                 {
-                    await _onGCDurationEvent?.Invoke(value);
+                    await _onEventEmit?.Invoke(value);
                 }
             }
         }

@@ -92,7 +92,7 @@ namespace MemoryLeak.Controllers
             var tasks = Enumerable.Range(1, count)
                         .Select(x => Task.Run(() => 1))
                         .ToArray();
-            Task.WaitAll(tasks); 
+            await Task.WhenAll(tasks); 
             return Ok();
         }
 
@@ -203,6 +203,16 @@ namespace MemoryLeak.Controllers
                 hash.Add(CPU);
                 hash.Add(RPS);
                 return hash.ToHashCode();
+            }
+
+            public static bool operator ==(CounterMetrics left, CounterMetrics right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(CounterMetrics left, CounterMetrics right)
+            {
+                return !(left == right);
             }
         }
     }

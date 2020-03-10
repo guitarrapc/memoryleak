@@ -66,9 +66,9 @@ namespace DiagnosticCore
         private GCEventListener listener;
         public Action<ChannelReader<GCStatistics>> ProfilerCallback { get; set; }
 
-        public GCEventStat(Func<GCStatistics, Task> onGCDurationEvent)
+        public GCEventStat(Func<GCStatistics, Task> onEventEmi)
         {
-            listener = new GCEventListener(onGCDurationEvent);
+            listener = new GCEventListener(onEventEmi);
         }
         public void Restart()
         {
@@ -94,14 +94,14 @@ namespace DiagnosticCore
         }
     }
 
-    public class ThreadEventStat : IProfilerStat
+    public class ThreadPoolEventStat : IProfilerStat
     {
-        private ThreadEventListener listener;
-        public Action<ChannelReader<ThreadStatistics>> ProfilerCallback { get; set; }
+        private ThreadPoolEventListener listener;
+        public Action<ChannelReader<ThreadPoolStatistics>> ProfilerCallback { get; set; }
 
-        public ThreadEventStat(Func<ThreadStatistics, Task> onGCDurationEvent)
+        public ThreadPoolEventStat(Func<ThreadPoolStatistics, Task> onEventEmi)
         {
-            listener = new ThreadEventListener(onGCDurationEvent);
+            listener = new ThreadPoolEventListener(onEventEmi);
         }
         public void Restart()
         {
@@ -112,7 +112,40 @@ namespace DiagnosticCore
         {
             listener.RunWithCallback(eventData => listener.EventCreatedHandler(eventData), () =>
             {
-                Console.WriteLine($"Start: {nameof(ThreadEventStat)}");
+                Console.WriteLine($"Start: {nameof(ThreadPoolEventStat)}");
+            });
+        }
+
+        public void Stop()
+        {
+            listener.Stop();
+        }
+
+        public async Task ReadResultAsync(CancellationToken cancellationToken)
+        {
+            await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    public class ContentionEventStat : IProfilerStat
+    {
+        private ContentionEventListener listener;
+        public Action<ChannelReader<ContentionStatistics>> ProfilerCallback { get; set; }
+
+        public ContentionEventStat(Func<ContentionStatistics, Task> onEventEmi)
+        {
+            listener = new ContentionEventListener(onEventEmi);
+        }
+        public void Restart()
+        {
+            listener.Restart();
+        }
+
+        public void Start()
+        {
+            listener.RunWithCallback(eventData => listener.EventCreatedHandler(eventData), () =>
+            {
+                Console.WriteLine($"Start: {nameof(ContentionEventStat)}");
             });
         }
 
