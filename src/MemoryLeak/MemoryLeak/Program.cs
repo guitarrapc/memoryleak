@@ -27,16 +27,16 @@ namespace MemoryLeak
 
         private static void EnableTracker()
         {
+            // start tracker
+            AllocationTracker<GcStats>.Current.Start();
+            ThreadingTracker<ThreadingStats>.Current.Start();
+
             ProfilerTracker.Options = new ProfilerTrackerOptions
             {
                 CancellationToken = default,
                 GCProfilerCallback = GCProfilerCallback,
                 ThreadProfilerCallback = ThreadProfilerCallback,
             };
-
-            // start tracker
-            AllocationTracker<GcStats>.Current.Start();
-            ThreadingTracker<ThreadingStats>.Current.Start();
             ProfilerTracker.Current.Value.Start();
         }
 
@@ -47,7 +47,14 @@ namespace MemoryLeak
         }
         private static async Task ThreadProfilerCallback(ThreadStatistics value)
         {
-            Console.WriteLine($"Thread ActiveWrokerThreadCount {value.ActiveWrokerThreadCount}; RetiredWrokerThreadCount {value.RetiredWrokerThreadCount};");
+            if (value.Type == ThreadStatisticType.ThreadWorker)
+            {
+                Console.WriteLine($"Thread ActiveWrokerThreadCount {value.ThreadWorker.ActiveWrokerThreadCount}; RetiredWrokerThreadCount {value.ThreadWorker.RetiredWrokerThreadCount};");
+            }
+            else if (value.Type == ThreadStatisticType.ThreaddAdjustment)
+            {
+                Console.WriteLine($"Thread Adjustment Reason {value.ThreadAdjustment.Reason}; AverageThrouput {value.ThreadAdjustment.AverageThrouput}; NewWorkerThreadCount {value.ThreadAdjustment.NewWorkerThreadCount}");
+            }
         }
     }
 }

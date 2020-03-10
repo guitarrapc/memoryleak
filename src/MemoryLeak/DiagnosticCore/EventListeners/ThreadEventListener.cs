@@ -7,15 +7,28 @@ using System.Threading.Tasks;
 
 namespace DiagnosticCore.EventListeners
 {
+    public enum ThreadStatisticType
+    {
+        ThreadWorker,
+        ThreaddAdjustment,
+    }
     /// <summary>
     /// Data structure represent WorkerThreadPool statistics
     /// </summary>
     public struct ThreadStatistics
     {
+        public ThreadStatisticType Type { get; set; }
+        public ThreadWorkerStatistics ThreadWorker { get; set; }
+        public ThreadAdjustmentStatistics ThreadAdjustment { get; set; }
+    }
+
+    public struct ThreadWorkerStatistics
+    {
         public long Time { get; set; }
         public uint ActiveWrokerThreadCount { get; set; }
         public uint RetiredWrokerThreadCount { get; set; }
     }
+
 
     public struct ThreadAdjustmentStatistics
     {
@@ -60,28 +73,24 @@ namespace DiagnosticCore.EventListeners
         public override void EventCreatedHandler(EventWrittenEventArgs eventData)
         {
             if (eventData.EventName == "ThreadPoolWorkerThreadWait") return;
-            if (eventData.EventName.StartsWith("ThreadPoolWorkerThreadStop"))
-            {
-                long time = eventData.TimeStamp.Ticks;
-            }
-            if (eventData.EventName.StartsWith("ThreadPoolWorkerThreadStart"))
-            {
-                long time = eventData.TimeStamp.Ticks;
-            }
             if (eventData.EventName == "ThreadPoolWorkerThreadAdjustmentAdjustment")
             {
                 long time = eventData.TimeStamp.Ticks;
                 var averageThroughput = double.Parse(eventData.Payload[0].ToString());
                 var newWorkerThreadCount = uint.Parse(eventData.Payload[1].ToString());
                 var reason = uint.Parse(eventData.Payload[2].ToString());
-                var stat = new ThreadAdjustmentStatistics()
+                // write to channel
+                _channel.Writer.TryWrite(new ThreadStatistics
                 {
-                    Time = time,
-                    AverageThrouput = averageThroughput,
-                    NewWorkerThreadCount = newWorkerThreadCount,
-                    Reason = reason,
-                };
-                Console.WriteLine($"Thread Adjustment Reason {stat.Reason}; AverageThrouput {stat.AverageThrouput}; NewWorkerThreadCount {stat.NewWorkerThreadCount}");
+                    Type = ThreadStatisticType.ThreaddAdjustment,
+                    ThreadAdjustment = new ThreadAdjustmentStatistics
+                    {
+                        Time = time,
+                        AverageThrouput = averageThroughput,
+                        NewWorkerThreadCount = newWorkerThreadCount,
+                        Reason = reason,
+                    },
+                });
             }
             else if (eventData.EventName.StartsWith("ThreadPoolWorkerThreadStart")) 
             {
@@ -91,9 +100,13 @@ namespace DiagnosticCore.EventListeners
                 // write to channel
                 _channel.Writer.TryWrite(new ThreadStatistics
                 {
-                    Time = time,
-                    ActiveWrokerThreadCount = activeWrokerThreadCount,
-                    RetiredWrokerThreadCount = retiredWrokerThreadCount,
+                    Type = ThreadStatisticType.ThreadWorker,
+                    ThreadWorker = new ThreadWorkerStatistics
+                    {
+                        Time = time,
+                        ActiveWrokerThreadCount = activeWrokerThreadCount,
+                        RetiredWrokerThreadCount = retiredWrokerThreadCount,
+                    },
                 });
             }
         }
