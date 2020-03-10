@@ -12,7 +12,7 @@ namespace DiagnosticCore.EventListeners
     /// EventListener to collect Thread events. <see cref="ThreadStatistics"/>.
     /// </summary>
     /// <remarks>payload: https://docs.microsoft.com/en-us/dotnet/framework/performance/thread-pool-etw-events </remarks>
-    public class ThreadPoolEventListener : ProfileEventListenerBase, IChannelReader<ThreadPoolStatistics>
+    public class ThreadPoolEventListener : ProfileEventListenerBase, IChannelReader
     {
         private readonly Channel<ThreadPoolStatistics> _channel;
         private readonly Func<ThreadPoolStatistics, Task> _onEventEmit;

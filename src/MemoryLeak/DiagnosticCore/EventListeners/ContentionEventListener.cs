@@ -14,7 +14,7 @@ namespace DiagnosticCore.EventListeners
     /// Contention occurs when a thread is waiting for a lock while another thread possesses the lock.
     /// https://docs.microsoft.com/en-us/dotnet/framework/performance/contention-etw-events
     /// </summary>
-    public class ContentionEventListener : ProfileEventListenerBase, IChannelReader<ContentionStatistics>
+    public class ContentionEventListener : ProfileEventListenerBase, IChannelReader
     {
         private readonly Channel<ContentionStatistics> _channel;
         private readonly Func<ContentionStatistics, Task> _onEventEmit;

@@ -12,7 +12,7 @@ namespace DiagnosticCore.EventListeners
     /// EventListener to collect Garbage Collection events. <see cref="GCStatistics"/>.
     /// https://docs.microsoft.com/en-us/dotnet/framework/performance/garbage-collection-etw-events
     /// </summary>
-    public class GCEventListener : ProfileEventListenerBase, IChannelReader<GCStatistics>
+    public class GCEventListener : ProfileEventListenerBase, IChannelReader
     {
         private readonly Channel<GCStatistics> _channel;
         private readonly Func<GCStatistics, Task> _onEventEmit;

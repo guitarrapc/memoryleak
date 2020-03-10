@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace DiagnosticCore.EventListeners
 {
-    public interface IChannelReader<T> where T : struct
+    public interface IChannelReader
     {
         ValueTask OnReadResultAsync(CancellationToken cancellationToken);
     }
