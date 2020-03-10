@@ -56,10 +56,10 @@ namespace DiagnosticCore
 
         public void Start()
         {
-            // FireAndForget
             foreach (var profile in profilerStats)
             {
-                var t = Task.Run(() => profile.Start());
+                profile.Start();
+                // FireAndForget
                 profile.ReadResultAsync(Options.CancellationToken);
             }
             initialized = true;
