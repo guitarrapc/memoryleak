@@ -25,6 +25,10 @@ namespace DiagnosticCore
         /// Callback invoke when Timer ThreadInfo Event emitted.
         /// </summary>
         public Func<TimerThreadInfoStatistics, Task> TimerThreadInfoCallback { get; set; }
+        /// <summary>
+        /// ThreadInfo dueTime/interval Options.
+        /// </summary>
+        public (TimeSpan dueTime, TimeSpan intervalPeriod) TimerThreadInfoOption { get; set; } = (TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
     }
 
     public class ProfilerTracker
@@ -47,7 +51,7 @@ namespace DiagnosticCore
                 new GCEventStat(Options?.GCProfilerCallback),
                 new ThreadPoolEventStat(Options?.ThreadProfilerCallback),
                 new ContentionEventStat(Options?.ContentionProfilerCallback),
-                new TimerThreadInfoStat(Options?.TimerThreadInfoCallback)
+                new TimerThreadInfoStat(Options?.TimerThreadInfoCallback, Options.TimerThreadInfoOption)
             };
 
         public void Start()

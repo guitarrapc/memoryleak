@@ -116,9 +116,9 @@ namespace DiagnosticCore
     {
         private readonly ThreadInfoLTimerListener listener;
 
-        public TimerThreadInfoStat(Func<TimerThreadInfoStatistics, Task> onEventEmi)
+        public TimerThreadInfoStat(Func<TimerThreadInfoStatistics, Task> onEventEmit, (TimeSpan dueTime, TimeSpan interval) options)
         {
-            listener = new ThreadInfoLTimerListener(onEventEmi);
+            listener = new ThreadInfoLTimerListener(onEventEmit, options.dueTime, options.interval);
         }
 
         public void Restart()
@@ -128,7 +128,10 @@ namespace DiagnosticCore
 
         public void Start()
         {
-            listener.Start();
+            listener.RunWithCallback(() => listener.EventCreatedHandler(), () =>
+            {
+                Console.WriteLine($"Start: {nameof(TimerThreadInfoStat)}");
+            });
         }
 
         public void Stop()

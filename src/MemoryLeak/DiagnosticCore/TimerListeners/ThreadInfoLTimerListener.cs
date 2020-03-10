@@ -9,26 +9,17 @@ using DiagnosticCore.Statistics;
 
 namespace DiagnosticCore.TimerListeners
 {
-    public class ThreadInfoLTimerListener : IDisposable, IChannelReader
+    public class ThreadInfoLTimerListener : TimerListenerBase, IDisposable, IChannelReader
     {
         static int initializedCount;
         static Timer timer;
 
         public ChannelReader<TimerThreadInfoStatistics> Reader { get; set; }
-        protected bool Enabled = false;
 
         private readonly Channel<TimerThreadInfoStatistics> _channel;
         private readonly Func<TimerThreadInfoStatistics, Task> _onEventEmit;
         private readonly TimeSpan _dueTime;
         private readonly TimeSpan _intervalPeriod;
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public ThreadInfoLTimerListener(Func<TimerThreadInfoStatistics, Task> onEventEmit) :this(null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
-        {
-            _onEventEmit = onEventEmit;
-        }
 
         /// <summary>
         /// Constructor
@@ -48,48 +39,16 @@ namespace DiagnosticCore.TimerListeners
             });
         }
 
-        public void Start()
+        protected override void OnEventWritten()
         {
             var count = Interlocked.Increment(ref initializedCount);
             if (count != 1) return;
 
-            Enabled = true;
-
             timer = new Timer(_ =>
             {
                 if (!Enabled) return;
-
-                try
-                {
-                    var date = DateTime.Now;
-
-                    // todo: get threadpool property `ThreadPool.ThreadCount`? https://github.com/dotnet/corefx/pull/37401/files
-                    ThreadPool.GetAvailableThreads(out var availableWorkerThreads, out var availableCompletionPortThreads);
-                    ThreadPool.GetMaxThreads(out var maxWorkerThreads, out var maxCompletionPortThreads);
-
-                    _channel.Writer.TryWrite(new TimerThreadInfoStatistics
-                    {
-                        AvailableWorkerThreads = availableWorkerThreads,
-                        AvailableCompletionPortThreads = availableCompletionPortThreads,
-                        MaxWorkerThreads = maxWorkerThreads,
-                        MaxCompletionPortThreads = maxCompletionPortThreads,
-                    });
-                }
-                catch (Exception ex)
-                {
-                    // todo: any exception handling
-                }
+                _eventWritten?.Invoke();
             }, null, _dueTime, _intervalPeriod);
-        }
-
-        public void Stop()
-        {
-            Enabled = false;
-        }
-
-        public void Restart()
-        {
-            Enabled = true;
         }
 
         public void Dispose()
@@ -114,6 +73,30 @@ namespace DiagnosticCore.TimerListeners
                 {
                     await _onEventEmit?.Invoke(value);
                 }
+            }
+        }
+
+        public override void EventCreatedHandler()
+        {
+            try
+            {
+                var date = DateTime.Now;
+
+                // todo: get threadpool property `ThreadPool.ThreadCount`? https://github.com/dotnet/corefx/pull/37401/files
+                ThreadPool.GetAvailableThreads(out var availableWorkerThreads, out var availableCompletionPortThreads);
+                ThreadPool.GetMaxThreads(out var maxWorkerThreads, out var maxCompletionPortThreads);
+
+                _channel.Writer.TryWrite(new TimerThreadInfoStatistics
+                {
+                    AvailableWorkerThreads = availableWorkerThreads,
+                    AvailableCompletionPortThreads = availableCompletionPortThreads,
+                    MaxWorkerThreads = maxWorkerThreads,
+                    MaxCompletionPortThreads = maxCompletionPortThreads,
+                });
+            }
+            catch (Exception ex)
+            {
+                // todo: any exception handling
             }
         }
     }
