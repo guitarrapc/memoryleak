@@ -21,8 +21,14 @@ namespace DiagnosticCore
         /// </summary>
         public Func<ContentionStatistics, Task> ContentionProfilerCallback { get; set; }
     }
+
     public class ProfilerTracker
     {
+        /// <summary>
+        /// ProfilerTracker.Options にコールバック登録してトラッキングしているイベントごとに自分の処理を実行
+        /// ProfilerTracker.Current.Value.Start() でトラッキング開始
+        /// ProfilerTracker.Current.Value.Stop()  でトラッキングを停止
+        /// </summary>
         public static Lazy<ProfilerTracker> Current = new Lazy<ProfilerTracker>(() => new ProfilerTracker());
 
         public static ProfilerTrackerOptions Options { get; set; } = new ProfilerTrackerOptions();
