@@ -6,9 +6,15 @@ using DiagnosticCore.Statistics;
 
 namespace DiagnosticCore
 {
+    /// <summary>
+    /// Register Options for tracker callbacks and Cancelltion token
+    /// </summary>
     public class ProfilerTrackerOptions
     {
-        public CancellationToken CancellationToken { get; set; }
+        /// <summary>
+        /// CancellcationToken to cancel reading event channel.
+        /// </summary>
+        public CancellationToken CancellationToken { get; set; } = default;
         /// <summary>
         /// Callback invoke when GC Event emitted and error.
         /// </summary>
@@ -43,52 +49,65 @@ namespace DiagnosticCore
     public class ProfilerTracker
     {
         /// <summary>
-        /// ProfilerTracker.Options にコールバック登録してトラッキングしているイベントごとに自分の処理を実行
-        /// ProfilerTracker.Current.Value.Start() でトラッキング開始
-        /// ProfilerTracker.Current.Value.Stop()  でトラッキングを停止
+        /// Singleton instance access.
         /// </summary>
         public static Lazy<ProfilerTracker> Current = new Lazy<ProfilerTracker>(() => new ProfilerTracker());
 
+        /// <summary>
+        /// Options for the tracker
+        /// </summary>
         public static ProfilerTrackerOptions Options { get; set; } = new ProfilerTrackerOptions();
 
         private readonly IProfiler[] profilerStats;
-        private bool initialized;
+        private int initializedNum;
 
-        public ProfilerTracker() =>
-            // list Stat
+        private ProfilerTracker() =>
+            // list Stats
             profilerStats = new IProfiler[] {
                 // event
-                new GCEventProfiler(Options?.GCEventCallback.OnSuccess, Options?.GCEventCallback.OnError),
-                new ThreadPoolEventProfiler(Options?.ThreadPoolEventCallback.OnSuccess, Options?.ThreadPoolEventCallback.OnError),
-                new ContentionEventProfiler(Options?.ContentionEventCallback.OnSuccess, Options?.ContentionEventCallback.OnError),
+                new GCEventProfiler(Options.GCEventCallback.OnSuccess, Options.GCEventCallback.OnError),
+                new ThreadPoolEventProfiler(Options.ThreadPoolEventCallback.OnSuccess, Options.ThreadPoolEventCallback.OnError),
+                new ContentionEventProfiler(Options.ContentionEventCallback.OnSuccess, Options.ContentionEventCallback.OnError),
                 // timer
-                new ThreadInfoTimerProfiler(Options?.ThreadInfoTimerCallback.OnSuccess, Options?.ThreadInfoTimerCallback.OnError, Options.TimerOption),
-                new GCInfoTimerProfiler(Options?.GCInfoTimerCallback.OnSuccess, Options?.GCInfoTimerCallback.OnError, Options.TimerOption),
-                new ProcessInfoTimerProfiler(Options?.ProcessInfoTimerCallback.OnSuccess, Options?.ProcessInfoTimerCallback.OnError, Options.TimerOption),
+                new ThreadInfoTimerProfiler(Options.ThreadInfoTimerCallback.OnSuccess, Options.ThreadInfoTimerCallback.OnError, Options.TimerOption),
+                new GCInfoTimerProfiler(Options.GCInfoTimerCallback.OnSuccess, Options.GCInfoTimerCallback.OnError, Options.TimerOption),
+                new ProcessInfoTimerProfiler(Options.ProcessInfoTimerCallback.OnSuccess, Options.ProcessInfoTimerCallback.OnError, Options.TimerOption),
             };
 
+        /// <summary>
+        /// Start tracking.
+        /// </summary>
         public void Start()
         {
+            // offer thread safe single access
+            Interlocked.Increment(ref initializedNum);
+            if (initializedNum != 1) return;
+
             foreach (var profile in profilerStats)
             {
                 profile.Start();
                 // FireAndForget
                 profile.ReadResultAsync(Options.CancellationToken);
             }
-            initialized = true;
         }
+        /// <summary>
+        /// Restart tracking.
+        /// </summary>
         public void Restart()
         {
-            if (!initialized) return;
+            if (initializedNum != 1) return;
 
             foreach (var stat in profilerStats)
             {
                 stat.Restart();
             }
         }
+        /// <summary>
+        /// Stop tracking.
+        /// </summary>
         public void Stop()
         {
-            if (!initialized) return;
+            if (initializedNum != 1) return;
 
             foreach (var stat in profilerStats)
             {
