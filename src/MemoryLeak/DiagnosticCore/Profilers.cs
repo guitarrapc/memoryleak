@@ -9,9 +9,23 @@ namespace DiagnosticCore
 {
     public interface IProfiler
     {
+        /// <summary>
+        /// Start Profiling
+        /// </summary>
         void Start();
+        /// <summary>
+        /// Restart Profiling
+        /// </summary>
         void Restart();
+        /// <summary>
+        /// Stop Profiling
+        /// </summary>
         void Stop();
+        /// <summary>
+        /// Read Profiler statistics
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         Task ReadResultAsync(CancellationToken cancellationToken);
     }
     public class GCEventProfiler : IProfiler

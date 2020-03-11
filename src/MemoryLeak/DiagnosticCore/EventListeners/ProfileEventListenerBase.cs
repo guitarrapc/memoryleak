@@ -106,12 +106,23 @@ namespace DiagnosticCore.EventListeners
             _eventWritten?.Invoke(eventData);
         }
 
+        /// <summary>
+        /// Start listener, register handler and run body after registration.
+        /// </summary>
+        /// <param name="handler"></param>
+        /// <param name="body"></param>
         public void RunWithCallback(Action<EventWrittenEventArgs> handler, Action body)
         {
             Enabled = true;
             _eventWritten = handler;
             body();
         }
+        /// <summary>
+        /// Start listener, register handler and run body after registration.
+        /// </summary>
+        /// <param name="handler"></param>
+        /// <param name="body"></param>
+        /// <returns></returns>
         public async Task RunWithCallbackAsync(Action<EventWrittenEventArgs> handler, Func<Task> body)
         {
             Enabled = true;
@@ -119,13 +130,18 @@ namespace DiagnosticCore.EventListeners
             await body().ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Restart listner
+        /// </summary>
         public virtual void Restart()
         {
             Enabled = true;
             foreach (var enabled in _enabledEventtSourceList)
                 EnableEvents(enabled, EventLevel.Informational, _keywords);
         }
-
+        /// <summary>
+        /// Stop listner
+        /// </summary>
         public virtual void Stop()
         {
             Enabled = false;
@@ -133,6 +149,10 @@ namespace DiagnosticCore.EventListeners
                 DisableEvents(enabled);
         }
 
+        /// <summary>
+        /// Debug Listener output handler
+        /// </summary>
+        /// <param name="eventData"></param>
         public virtual void DebugEventDataDetailHandler(EventWrittenEventArgs eventData)
         {
             Console.WriteLine($"ThreadID = {eventData.OSThreadId} ID = {eventData.EventId} Name = {eventData.EventName}");

@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
-using DiagnosticCore.EventListeners;
-using DiagnosticCore.Statistics;
 
 namespace DiagnosticCore.TimerListeners
 {
@@ -14,6 +8,11 @@ namespace DiagnosticCore.TimerListeners
         protected bool Enabled = false;
         protected Action _eventWritten;
 
+        /// <summary>
+        /// Start listener, register handler and run body after registration.
+        /// </summary>
+        /// <param name="handler"></param>
+        /// <param name="body"></param>
         public void RunWithCallback(Action handler, Action body)
         {
             Enabled = true;
@@ -21,6 +20,12 @@ namespace DiagnosticCore.TimerListeners
             OnEventWritten();
             body();
         }
+        /// <summary>
+        /// Start listener, register handler and run body after registration.
+        /// </summary>
+        /// <param name="handler"></param>
+        /// <param name="body"></param>
+        /// <returns></returns>
         public async Task RunWithCallbackAsync(Action handler, Func<Task> body)
         {
             Enabled = true;
@@ -29,14 +34,19 @@ namespace DiagnosticCore.TimerListeners
             await body().ConfigureAwait(false);
         }
 
-        public virtual void Stop()
-        {
-            Enabled = false;
-        }
-
+        /// <summary>
+        /// Restart listner
+        /// </summary>
         public virtual void Restart()
         {
             Enabled = true;
+        }
+        /// <summary>
+        /// Stop listner
+        /// </summary>
+        public virtual void Stop()
+        {
+            Enabled = false;
         }
 
         protected abstract void OnEventWritten();
