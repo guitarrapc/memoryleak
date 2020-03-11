@@ -58,7 +58,14 @@ namespace MemoryLeak
         private static Task GCProfilerCallback(EtwGCStatistics arg)
         {
             // send metrics to datadog or any favor you like.
-            Console.WriteLine($"GC Index {arg.Index}; Gen {arg.Generation}; Type {arg.Type}; Duration {arg.DurationMillsec}ms; Reason {arg.Reason};");
+            if (arg.Type == GCEventType.GCStartEnd)
+            {
+                Console.WriteLine($"GC StartEnd Reason {arg.GCStartEndStatistics.Reason}; Duration {arg.GCStartEndStatistics.DurationMillsec}ms; Index {arg.GCStartEndStatistics.Index}; Gen {arg.GCStartEndStatistics.Generation}; Type {arg.GCStartEndStatistics.Type};");
+            }
+            else if (arg.Type == GCEventType.GCSuspend)
+            {
+                Console.WriteLine($"GC Suspend Reason {arg.GCSuspendStatistics.Reason}; Duration {arg.GCSuspendStatistics.DurationMillisec}ms; Count {arg.GCSuspendStatistics.Count};");
+            }
             return Task.CompletedTask;
         }
         /// <summary>
@@ -91,7 +98,7 @@ namespace MemoryLeak
         /// <returns></returns>
         private static Task ContentionProfilerCallback(EtwContentionStatistics arg)
         {
-            Console.WriteLine($"Contention Flag {arg.Flag}; DurationNs {arg.DurationNs}");
+            //Console.WriteLine($"Contention Flag {arg.Flag}; DurationNs {arg.DurationNs}");
             return Task.CompletedTask;
         }
 

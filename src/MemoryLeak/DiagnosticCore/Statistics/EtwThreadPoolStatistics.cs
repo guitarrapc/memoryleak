@@ -59,5 +59,21 @@ namespace DiagnosticCore.Statistics
         /// 0x07 - Thread timed out.
         /// </summary>
         public uint Reason { get; set; }
+
+        public string GetReasonString()
+        {
+            return Reason switch
+            {
+                0 => "Warmup",
+                1 => "Initializing",
+                2 => "Random move",
+                3 => "Climbing move",
+                4 => "Change point",
+                5 => "Stabilizing",
+                6 => "Starvation",
+                7 => "Thread timed out",
+                _ => throw new ArgumentOutOfRangeException("reason not defined."),
+            };
+        }
     }
 }
