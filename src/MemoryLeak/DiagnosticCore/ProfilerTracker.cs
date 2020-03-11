@@ -142,5 +142,17 @@ namespace DiagnosticCore
             }
             return false;
         }
+
+        /// <summary>
+        /// Show profiler status.
+        /// </summary>
+        /// <param name="action"></param>
+        public void Status(Action<(string Name, bool Enabled)> action)
+        {
+            foreach (var profiler in profilerStats)
+            {
+                action((profiler.Name, profiler.Enabled));
+            }
+        }
     }
 }

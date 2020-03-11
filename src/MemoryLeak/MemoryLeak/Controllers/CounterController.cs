@@ -7,6 +7,8 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using DiagnosticCore.Oop;
+using System.Collections.Generic;
+using System.Text.Json;
 
 namespace MemoryLeak.Controllers
 {
@@ -132,6 +134,19 @@ namespace MemoryLeak.Controllers
         {
             ProfilerTracker.Current.Value.Reset(new CancellationTokenSource());
             return Ok("reseted");
+        }
+
+        /// <summary>
+        /// Reset Tracker CancellationTokenSource to profile diagnostics
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("statustracker")]
+        public ActionResult StatusTracker()
+        {
+            var dic = new Dictionary<string, bool>();
+            ProfilerTracker.Current.Value.Status(arg => dic.Add(arg.Name, arg.Enabled));
+            var json = JsonSerializer.Serialize(dic);
+            return Ok(json);
         }
 
         /// <summary>

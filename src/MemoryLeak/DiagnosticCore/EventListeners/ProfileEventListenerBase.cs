@@ -7,7 +7,7 @@ namespace DiagnosticCore.EventListeners
 {
     public abstract class ProfileEventListenerBase : EventListener
     {
-        protected bool Enabled = false;
+        public bool Enabled { get; protected set; }
 
         private readonly string _targetSourceName;
         private readonly Guid _targetSourceGuid;

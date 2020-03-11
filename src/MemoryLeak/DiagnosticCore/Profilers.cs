@@ -10,6 +10,15 @@ namespace DiagnosticCore
     public interface IProfiler
     {
         /// <summary>
+        /// Profiler Name
+        /// </summary>
+        string Name { get; }
+        /// <summary>
+        /// Profiler status
+        /// </summary>
+        bool Enabled { get; }
+
+        /// <summary>
         /// Start Profiling
         /// </summary>
         void Start();
@@ -32,18 +41,25 @@ namespace DiagnosticCore
     {
         private readonly GCEventListener listener;
 
+        public string Name { get; } = nameof(GCEventProfiler);
+        public bool Enabled => listener == null ? false : listener.Enabled;
+
         public GCEventProfiler(Func<GCEventStatistics, Task> onEventEmit, Action<Exception> onEventError)
         {
-            listener = new GCEventListener(onEventEmit, onEventError);
+            // enable only emit callback is exists.
+            if (onEventEmit != null)
+            {
+                listener = new GCEventListener(onEventEmit, onEventError);
+            }
         }
         public void Restart()
         {
-            listener.Restart();
+            listener?.Restart();
         }
 
         public void Start()
         {
-            listener.RunWithCallback(eventData => listener.EventCreatedHandler(eventData), () =>
+            listener?.RunWithCallback(eventData => listener.EventCreatedHandler(eventData), () =>
             {
                 Console.WriteLine($"Start: {nameof(GCEventProfiler)}");
             });
@@ -51,12 +67,15 @@ namespace DiagnosticCore
 
         public void Stop()
         {
-            listener.Stop();
+            listener?.Stop();
         }
 
         public async Task ReadResultAsync(CancellationToken cancellationToken)
         {
-            await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
+            if (listener != null)
+            {
+                await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
@@ -64,18 +83,25 @@ namespace DiagnosticCore
     {
         private readonly ThreadPoolEventListener listener;
 
+        public string Name { get; } = nameof(ThreadPoolEventProfiler);
+        public bool Enabled => listener == null ? false : listener.Enabled;
+
         public ThreadPoolEventProfiler(Func<ThreadPoolEventStatistics, Task> onEventEmit, Action<Exception> onEventError)
         {
-            listener = new ThreadPoolEventListener(onEventEmit, onEventError);
+            // enable only emit callback is exists.
+            if (onEventEmit != null)
+            {
+                listener = new ThreadPoolEventListener(onEventEmit, onEventError);
+            }
         }
         public void Restart()
         {
-            listener.Restart();
+            listener?.Restart();
         }
 
         public void Start()
         {
-            listener.RunWithCallback(eventData => listener.EventCreatedHandler(eventData), () =>
+            listener?.RunWithCallback(eventData => listener.EventCreatedHandler(eventData), () =>
             {
                 Console.WriteLine($"Start: {nameof(ThreadPoolEventProfiler)}");
             });
@@ -83,12 +109,15 @@ namespace DiagnosticCore
 
         public void Stop()
         {
-            listener.Stop();
+            listener?.Stop();
         }
 
         public async Task ReadResultAsync(CancellationToken cancellationToken)
         {
-            await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
+            if (listener != null)
+            {
+                await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
@@ -96,18 +125,25 @@ namespace DiagnosticCore
     {
         private readonly ContentionEventListener listener;
 
+        public string Name { get; } = nameof(ContentionEventProfiler);
+        public bool Enabled => listener == null ? false : listener.Enabled;
+
         public ContentionEventProfiler(Func<ContentionEventStatistics, Task> onEventEmit, Action<Exception> onEventError)
         {
-            listener = new ContentionEventListener(onEventEmit, onEventError);
+            // enable only emit callback is exists.
+            if (onEventEmit != null)
+            {
+                listener = new ContentionEventListener(onEventEmit, onEventError);
+            }
         }
         public void Restart()
         {
-            listener.Restart();
+            listener?.Restart();
         }
 
         public void Start()
         {
-            listener.RunWithCallback(eventData => listener.EventCreatedHandler(eventData), () =>
+            listener?.RunWithCallback(eventData => listener.EventCreatedHandler(eventData), () =>
             {
                 Console.WriteLine($"Start: {nameof(ContentionEventProfiler)}");
             });
@@ -115,12 +151,15 @@ namespace DiagnosticCore
 
         public void Stop()
         {
-            listener.Stop();
+            listener?.Stop();
         }
 
         public async Task ReadResultAsync(CancellationToken cancellationToken)
         {
-            await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
+            if (listener != null)
+            {
+                await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
@@ -128,19 +167,26 @@ namespace DiagnosticCore
     {
         private readonly ThreadInfoTimerListener listener;
 
+        public string Name { get; } = nameof(ThreadInfoTimerProfiler);
+        public bool Enabled => listener == null ? false : listener.Enabled;
+
         public ThreadInfoTimerProfiler(Func<ThreadInfoStatistics, Task> onEventEmit, Action<Exception> onEventError, (TimeSpan dueTime, TimeSpan interval) options)
         {
-            listener = new ThreadInfoTimerListener(onEventEmit, onEventError, options.dueTime, options.interval);
+            // enable only emit callback is exists.
+            if (onEventEmit != null)
+            {
+                listener = new ThreadInfoTimerListener(onEventEmit, onEventError, options.dueTime, options.interval);
+            }
         }
 
         public void Restart()
         {
-            listener.Restart();
+            listener?.Restart();
         }
 
         public void Start()
         {
-            listener.RunWithCallback(() => listener.EventCreatedHandler(), () =>
+            listener?.RunWithCallback(() => listener.EventCreatedHandler(), () =>
             {
                 Console.WriteLine($"Start: {nameof(ThreadInfoTimerProfiler)}");
             });
@@ -148,12 +194,15 @@ namespace DiagnosticCore
 
         public void Stop()
         {
-            listener.Stop();
+            listener?.Stop();
         }
 
         public async Task ReadResultAsync(CancellationToken cancellationToken)
         {
-            await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
+            if (listener != null)
+            {
+                await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
@@ -161,19 +210,26 @@ namespace DiagnosticCore
     {
         private readonly GCInfoTimerListener listener;
 
+        public string Name { get; } = nameof(GCInfoTimerProfiler);
+        public bool Enabled => listener == null ? false : listener.Enabled;
+
         public GCInfoTimerProfiler(Func<GCInfoStatistics, Task> onEventEmit, Action<Exception> onEventError, (TimeSpan dueTime, TimeSpan interval) options)
         {
-            listener = new GCInfoTimerListener(onEventEmit, onEventError, options.dueTime, options.interval);
+            // enable only emit callback is exists.
+            if (onEventEmit != null)
+            {
+                listener = new GCInfoTimerListener(onEventEmit, onEventError, options.dueTime, options.interval);
+            }
         }
 
         public void Restart()
         {
-            listener.Restart();
+            listener?.Restart();
         }
 
         public void Start()
         {
-            listener.RunWithCallback(() => listener.EventCreatedHandler(), () =>
+            listener?.RunWithCallback(() => listener.EventCreatedHandler(), () =>
             {
                 Console.WriteLine($"Start: {nameof(GCInfoTimerProfiler)}");
             });
@@ -181,12 +237,15 @@ namespace DiagnosticCore
 
         public void Stop()
         {
-            listener.Stop();
+            listener?.Stop();
         }
 
         public async Task ReadResultAsync(CancellationToken cancellationToken)
         {
-            await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
+            if (listener != null)
+            {
+                await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
@@ -194,19 +253,26 @@ namespace DiagnosticCore
     {
         private readonly ProcessInfoTimerListener listener;
 
+        public string Name { get; } = nameof(ProcessInfoTimerProfiler);
+        public bool Enabled => listener == null ? false : listener.Enabled;
+
         public ProcessInfoTimerProfiler(Func<ProcessInfoStatistics, Task> onEventEmit, Action<Exception> onEventError, (TimeSpan dueTime, TimeSpan interval) options)
         {
-            listener = new ProcessInfoTimerListener(onEventEmit, onEventError, options.dueTime, options.interval);
+            // enable only emit callback is exists.
+            if (onEventEmit != null)
+            {
+                listener = new ProcessInfoTimerListener(onEventEmit, onEventError, options.dueTime, options.interval);
+            }
         }
 
         public void Restart()
         {
-            listener.Restart();
+            listener?.Restart();
         }
 
         public void Start()
         {
-            listener.RunWithCallback(() => listener.EventCreatedHandler(), () =>
+            listener?.RunWithCallback(() => listener.EventCreatedHandler(), () =>
             {
                 Console.WriteLine($"Start: {nameof(ProcessInfoTimerProfiler)}");
             });
@@ -214,12 +280,15 @@ namespace DiagnosticCore
 
         public void Stop()
         {
-            listener.Stop();
+            listener?.Stop();
         }
 
         public async Task ReadResultAsync(CancellationToken cancellationToken)
         {
-            await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
+            if (listener != null)
+            {
+                await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 }

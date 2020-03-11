@@ -5,7 +5,7 @@ namespace DiagnosticCore.TimerListeners
 {
     public abstract class TimerListenerBase
     {
-        protected bool Enabled = false;
+        public bool Enabled { get; protected set; }
         protected Action _eventWritten;
 
         /// <summary>
