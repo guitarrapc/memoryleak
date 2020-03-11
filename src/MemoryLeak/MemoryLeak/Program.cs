@@ -40,12 +40,12 @@ namespace MemoryLeak
             ProfilerTracker.Options = new ProfilerTrackerOptions
             {
                 CancellationToken = default,
-                GCEventProfilerCallback = GCEventProfilerCallback,
-                ThreadPoolEventProfilerCallback = ThreadPoolEventProfilerCallback,
-                ContentionEventProfilerCallback = ContentionEventProfilerCallback,
-                ThreadInfoTimerCallback = ThreadInfoTimerCallback,
-                GCInfoTimerCallback = GCInfoTimerCallback,
-                ProcessInfoTimerCallback = ProcessInfoTimerCallback,
+                GCEventCallback = (GCEventProfilerCallback, ex => { }),
+                ThreadPoolEventCallback = (ThreadPoolEventProfilerCallback, ex => {}),
+                ContentionEventCallback = (ContentionEventProfilerCallback, ex => { }),
+                ThreadInfoTimerCallback = (ThreadInfoTimerCallback, ex => { }),
+                GCInfoTimerCallback = (GCInfoTimerCallback, ex => { }),
+                ProcessInfoTimerCallback = (ProcessInfoTimerCallback, ex => { }),
             };
             ProfilerTracker.Current.Value.Start();
         }

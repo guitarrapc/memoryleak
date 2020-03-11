@@ -10,29 +10,29 @@ namespace DiagnosticCore
     {
         public CancellationToken CancellationToken { get; set; }
         /// <summary>
-        /// Callback invoke when GC Event emitted
+        /// Callback invoke when GC Event emitted and error.
         /// </summary>
-        public Func<GCEventStatistics, Task> GCEventProfilerCallback { get; set; }
+        public (Func<GCEventStatistics, Task> OnSuccess, Action<Exception> OnError) GCEventCallback { get; set; }
         /// <summary>
-        /// Callback invoke when ThreadPool Event emitted
+        /// Callback invoke when ThreadPool Event emitted and error.
         /// </summary>
-        public Func<ThreadPoolEventStatistics, Task> ThreadPoolEventProfilerCallback { get; set; }
+        public (Func<ThreadPoolEventStatistics, Task> OnSuccess, Action<Exception> OnError) ThreadPoolEventCallback { get; set; }
         /// <summary>
-        /// Callback invoke when Contention Event emitted (generally lock event)
+        /// Callback invoke when Contention Event emitted (generally lock event) and error.
         /// </summary>
-        public Func<ContentionEventStatistics, Task> ContentionEventProfilerCallback { get; set; }
+        public (Func<ContentionEventStatistics, Task> OnSuccess, Action<Exception> OnError) ContentionEventCallback { get; set; }
         /// <summary>
-        /// Callback invoke when Timer ThreadInfo Event emitted.
+        /// Callback invoke when Timer ThreadInfo Event emitted and error.
         /// </summary>
-        public Func<ThreadInfoStatistics, Task> ThreadInfoTimerCallback { get; set; }
+        public (Func<ThreadInfoStatistics, Task> OnSuccess, Action<Exception> OnError) ThreadInfoTimerCallback { get; set; }
         /// <summary>
-        /// Callback invoke when Timer GCInfo Event emitted.
+        /// Callback invoke when Timer GCInfo Event emitted and error.
         /// </summary>
-        public Func<GCInfoStatistics, Task> GCInfoTimerCallback { get; set; }
+        public (Func<GCInfoStatistics, Task> OnSuccess, Action<Exception> OnError) GCInfoTimerCallback { get; set; }
         /// <summary>
-        /// Callback invoke when Timer ProcessInfo Event emitted.
+        /// Callback invoke when Timer ProcessInfo Event emitted and error.
         /// </summary>
-        public Func<ProcessInfoStatistics, Task> ProcessInfoTimerCallback { get; set; }
+        public (Func<ProcessInfoStatistics, Task> OnSuccess, Action<Exception> OnError) ProcessInfoTimerCallback { get; set; }
 
         /// <summary>
         /// Timer dueTime/interval Options.
@@ -58,13 +58,13 @@ namespace DiagnosticCore
             // list Stat
             profilerStats = new IProfiler[] {
                 // event
-                new GCEventProfiler(Options?.GCEventProfilerCallback),
-                new ThreadPoolEventProfiler(Options?.ThreadPoolEventProfilerCallback),
-                new ContentionEventProfiler(Options?.ContentionEventProfilerCallback),
+                new GCEventProfiler(Options?.GCEventCallback.OnSuccess, Options?.GCEventCallback.OnError),
+                new ThreadPoolEventProfiler(Options?.ThreadPoolEventCallback.OnSuccess, Options?.ThreadPoolEventCallback.OnError),
+                new ContentionEventProfiler(Options?.ContentionEventCallback.OnSuccess, Options?.ContentionEventCallback.OnError),
                 // timer
-                new ThreadInfoTimerProfiler(Options?.ThreadInfoTimerCallback, Options.TimerOption),
-                new GCInfoTimerProfiler(Options?.GCInfoTimerCallback, Options.TimerOption),
-                new ProcessInfoTimerProfiler(Options.ProcessInfoTimerCallback, Options.TimerOption),
+                new ThreadInfoTimerProfiler(Options?.ThreadInfoTimerCallback.OnSuccess, Options?.ThreadInfoTimerCallback.OnError, Options.TimerOption),
+                new GCInfoTimerProfiler(Options?.GCInfoTimerCallback.OnSuccess, Options?.GCInfoTimerCallback.OnError, Options.TimerOption),
+                new ProcessInfoTimerProfiler(Options?.ProcessInfoTimerCallback.OnSuccess, Options?.ProcessInfoTimerCallback.OnError, Options.TimerOption),
             };
 
         public void Start()

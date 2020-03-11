@@ -18,9 +18,9 @@ namespace DiagnosticCore
     {
         private readonly GCEventListener listener;
 
-        public GCEventProfiler(Func<GCEventStatistics, Task> onEventEmit)
+        public GCEventProfiler(Func<GCEventStatistics, Task> onEventEmit, Action<Exception> onEventError)
         {
-            listener = new GCEventListener(onEventEmit);
+            listener = new GCEventListener(onEventEmit, onEventError);
         }
         public void Restart()
         {
@@ -50,9 +50,9 @@ namespace DiagnosticCore
     {
         private readonly ThreadPoolEventListener listener;
 
-        public ThreadPoolEventProfiler(Func<ThreadPoolEventStatistics, Task> onEventEmit)
+        public ThreadPoolEventProfiler(Func<ThreadPoolEventStatistics, Task> onEventEmit, Action<Exception> onEventError)
         {
-            listener = new ThreadPoolEventListener(onEventEmit);
+            listener = new ThreadPoolEventListener(onEventEmit, onEventError);
         }
         public void Restart()
         {
@@ -82,9 +82,9 @@ namespace DiagnosticCore
     {
         private readonly ContentionEventListener listener;
 
-        public ContentionEventProfiler(Func<ContentionEventStatistics, Task> onEventEmit)
+        public ContentionEventProfiler(Func<ContentionEventStatistics, Task> onEventEmit, Action<Exception> onEventError)
         {
-            listener = new ContentionEventListener(onEventEmit);
+            listener = new ContentionEventListener(onEventEmit, onEventError);
         }
         public void Restart()
         {
@@ -114,9 +114,9 @@ namespace DiagnosticCore
     {
         private readonly ThreadInfoTimerListener listener;
 
-        public ThreadInfoTimerProfiler(Func<ThreadInfoStatistics, Task> onEventEmit, (TimeSpan dueTime, TimeSpan interval) options)
+        public ThreadInfoTimerProfiler(Func<ThreadInfoStatistics, Task> onEventEmit, Action<Exception> onEventError, (TimeSpan dueTime, TimeSpan interval) options)
         {
-            listener = new ThreadInfoTimerListener(onEventEmit, options.dueTime, options.interval);
+            listener = new ThreadInfoTimerListener(onEventEmit, onEventError, options.dueTime, options.interval);
         }
 
         public void Restart()
@@ -147,9 +147,9 @@ namespace DiagnosticCore
     {
         private readonly GCInfoTimerListener listener;
 
-        public GCInfoTimerProfiler(Func<GCInfoStatistics, Task> onEventEmit, (TimeSpan dueTime, TimeSpan interval) options)
+        public GCInfoTimerProfiler(Func<GCInfoStatistics, Task> onEventEmit, Action<Exception> onEventError, (TimeSpan dueTime, TimeSpan interval) options)
         {
-            listener = new GCInfoTimerListener(onEventEmit, options.dueTime, options.interval);
+            listener = new GCInfoTimerListener(onEventEmit, onEventError, options.dueTime, options.interval);
         }
 
         public void Restart()
@@ -180,9 +180,9 @@ namespace DiagnosticCore
     {
         private readonly ProcessInfoTimerListener listener;
 
-        public ProcessInfoTimerProfiler(Func<ProcessInfoStatistics, Task> onEventEmit, (TimeSpan dueTime, TimeSpan interval) options)
+        public ProcessInfoTimerProfiler(Func<ProcessInfoStatistics, Task> onEventEmit, Action<Exception> onEventError, (TimeSpan dueTime, TimeSpan interval) options)
         {
-            listener = new ProcessInfoTimerListener(onEventEmit, options.dueTime, options.interval);
+            listener = new ProcessInfoTimerListener(onEventEmit, onEventError, options.dueTime, options.interval);
         }
 
         public void Restart()

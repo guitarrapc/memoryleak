@@ -18,6 +18,7 @@ namespace DiagnosticCore.TimerListeners
 
         private readonly Channel<ThreadInfoStatistics> _channel;
         private readonly Func<ThreadInfoStatistics, Task> _onEventEmit;
+        private readonly Action<Exception> _onEventError;
         private readonly TimeSpan _dueTime;
         private readonly TimeSpan _intervalPeriod;
 
@@ -26,9 +27,10 @@ namespace DiagnosticCore.TimerListeners
         /// </summary>
         /// <param name="dueTime">The amount of time delay before timer starts.</param>
         /// <param name="intervalPeriod">The time inteval between the invocation of timer.</param>
-        public ThreadInfoTimerListener(Func<ThreadInfoStatistics, Task> onEventEmit, TimeSpan dueTime, TimeSpan intervalPeriod)
+        public ThreadInfoTimerListener(Func<ThreadInfoStatistics, Task> onEventEmit, Action<Exception> onEventError, TimeSpan dueTime, TimeSpan intervalPeriod)
         {
             _onEventEmit = onEventEmit;
+            _onEventError = onEventError;
             _dueTime = dueTime;
             _intervalPeriod = intervalPeriod;
             _channel = Channel.CreateBounded<ThreadInfoStatistics>(new BoundedChannelOptions(50)
@@ -106,7 +108,7 @@ namespace DiagnosticCore.TimerListeners
             }
             catch (Exception ex)
             {
-                // todo: any exception handling
+                _onEventError?.Invoke(ex);
             }
         }
     }

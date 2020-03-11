@@ -18,10 +18,12 @@ namespace DiagnosticCore.EventListeners
     {
         private readonly Channel<ContentionEventStatistics> _channel;
         private readonly Func<ContentionEventStatistics, Task> _onEventEmit;
+        private readonly Action<Exception> _onEventError;
 
-        public ContentionEventListener(Func<ContentionEventStatistics, Task> onEventEmit) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.Contention)
+        public ContentionEventListener(Func<ContentionEventStatistics, Task> onEventEmit, Action<Exception> onEventError) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.Contention)
         {
             _onEventEmit = onEventEmit;
+            _onEventError = onEventError;
             var channelOption = new BoundedChannelOptions(50)
             {
                 SingleReader = true,
@@ -33,19 +35,26 @@ namespace DiagnosticCore.EventListeners
 
         public override void EventCreatedHandler(EventWrittenEventArgs eventData)
         {
-            if (eventData.EventName.StartsWith("ContentionStop_", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                long time = eventData.TimeStamp.Ticks;
-                var flag = byte.Parse(eventData.Payload[0].ToString());
-                var durationNs = double.Parse(eventData.Payload[2].ToString());
-
-                // write to channel
-                _channel.Writer.TryWrite(new ContentionEventStatistics
+                if (eventData.EventName.StartsWith("ContentionStop_", StringComparison.OrdinalIgnoreCase))
                 {
-                    Time = time,
-                    Flag = flag,
-                    DurationNs = durationNs,
-                });
+                    long time = eventData.TimeStamp.Ticks;
+                    var flag = byte.Parse(eventData.Payload[0].ToString());
+                    var durationNs = double.Parse(eventData.Payload[2].ToString());
+
+                    // write to channel
+                    _channel.Writer.TryWrite(new ContentionEventStatistics
+                    {
+                        Time = time,
+                        Flag = flag,
+                        DurationNs = durationNs,
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _onEventError?.Invoke(ex);
             }
         }
 

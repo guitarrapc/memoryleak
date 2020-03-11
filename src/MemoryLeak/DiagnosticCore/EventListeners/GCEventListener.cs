@@ -16,6 +16,7 @@ namespace DiagnosticCore.EventListeners
     {
         private readonly Channel<GCEventStatistics> _channel;
         private readonly Func<GCEventStatistics, Task> _onEventEmit;
+        private readonly Action<Exception> _onEventError;
         long timeGCStart = 0;
         uint reason = 0;
         uint type = 0;
@@ -25,9 +26,10 @@ namespace DiagnosticCore.EventListeners
         uint suspendReason = 0;
         uint suspendCount = 0;
 
-        public GCEventListener(Func<GCEventStatistics, Task> onEventEmit) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.GC)
+        public GCEventListener(Func<GCEventStatistics, Task> onEventEmit, Action<Exception> onEventError) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.GC)
         {
             _onEventEmit = onEventEmit;
+            _onEventError = onEventError;
             var channelOption = new BoundedChannelOptions(50)
             {
                 SingleReader = true,
@@ -69,60 +71,67 @@ namespace DiagnosticCore.EventListeners
         ///</remarks>
         public override void EventCreatedHandler(EventWrittenEventArgs eventData)
         {
-            // GCStart & GCEnd = Actual GC
-            // GCSuspendEEBegin && GCRestartEEEnd = GC Suspension + Pause (include GC Start-End)
-            // NOTE: HeapStat will retrieve in GCInfoTimerListener
-            if (eventData.EventName.StartsWith("GCStart_", StringComparison.OrdinalIgnoreCase)) // GCStart_V1 / V2 ...
+            try
             {
-                timeGCStart = eventData.TimeStamp.Ticks;
-                reason = uint.Parse(eventData.Payload[2].ToString());
-                type = uint.Parse(eventData.Payload[3].ToString());
-            }
-            else if (eventData.EventName.StartsWith("GCEnd_", StringComparison.OrdinalIgnoreCase)) // GCEnd_V1 / V2 ...
-            {
-                long timeGCEnd = eventData.TimeStamp.Ticks;
-                var gcIndex = uint.Parse(eventData.Payload[0].ToString());
-                var generation = uint.Parse(eventData.Payload[1].ToString());
-                var duration = (double)(timeGCEnd - timeGCStart) / 10.0 / 1000.0;
-
-                // write to channel
-                _channel.Writer.TryWrite(new GCEventStatistics
+                // GCStart & GCEnd = Actual GC
+                // GCSuspendEEBegin && GCRestartEEEnd = GC Suspension + Pause (include GC Start-End)
+                // NOTE: HeapStat will retrieve in GCInfoTimerListener
+                if (eventData.EventName.StartsWith("GCStart_", StringComparison.OrdinalIgnoreCase)) // GCStart_V1 / V2 ...
                 {
-                    Type = GCEventType.GCStartEnd,
-                    GCStartEndStatistics = new GCStartEndStatistics
-                    {
-                        Index = gcIndex,
-                        Type = type,
-                        Generation = generation,
-                        Reason = reason,
-                        DurationMillsec = duration,
-                        GCStartTime = timeGCStart,
-                        GCEndTime = timeGCEnd,
-                    }
-                });
-            }
-            else if (eventData.EventName.StartsWith("GCSuspendEEBegin", StringComparison.OrdinalIgnoreCase))
-            {
-                suspendTimeGCStart = eventData.TimeStamp.Ticks;
-                suspendReason = uint.Parse(eventData.Payload[0].ToString());
-                suspendCount = uint.Parse(eventData.Payload[1].ToString());
-            }
-            else if (eventData.EventName.StartsWith("GCRestartEEEnd", StringComparison.OrdinalIgnoreCase))
-            {
-                var suspendEnd = eventData.TimeStamp.Ticks;
-                var duration = (double)(suspendEnd - suspendTimeGCStart) / 10.0 / 1000.0;
-
-                // write to channel
-                _channel.Writer.TryWrite(new GCEventStatistics
+                    timeGCStart = eventData.TimeStamp.Ticks;
+                    reason = uint.Parse(eventData.Payload[2].ToString());
+                    type = uint.Parse(eventData.Payload[3].ToString());
+                }
+                else if (eventData.EventName.StartsWith("GCEnd_", StringComparison.OrdinalIgnoreCase)) // GCEnd_V1 / V2 ...
                 {
-                    Type = GCEventType.GCSuspend,
-                    GCSuspendStatistics = new GCSuspendStatistics
+                    long timeGCEnd = eventData.TimeStamp.Ticks;
+                    var gcIndex = uint.Parse(eventData.Payload[0].ToString());
+                    var generation = uint.Parse(eventData.Payload[1].ToString());
+                    var duration = (double)(timeGCEnd - timeGCStart) / 10.0 / 1000.0;
+
+                    // write to channel
+                    _channel.Writer.TryWrite(new GCEventStatistics
                     {
-                        Reason = suspendReason,
-                        DurationMillisec = duration,
-                        Count = suspendCount,
-                    }
-                });
+                        Type = GCEventType.GCStartEnd,
+                        GCStartEndStatistics = new GCStartEndStatistics
+                        {
+                            Index = gcIndex,
+                            Type = type,
+                            Generation = generation,
+                            Reason = reason,
+                            DurationMillsec = duration,
+                            GCStartTime = timeGCStart,
+                            GCEndTime = timeGCEnd,
+                        }
+                    });
+                }
+                else if (eventData.EventName.StartsWith("GCSuspendEEBegin", StringComparison.OrdinalIgnoreCase))
+                {
+                    suspendTimeGCStart = eventData.TimeStamp.Ticks;
+                    suspendReason = uint.Parse(eventData.Payload[0].ToString());
+                    suspendCount = uint.Parse(eventData.Payload[1].ToString());
+                }
+                else if (eventData.EventName.StartsWith("GCRestartEEEnd", StringComparison.OrdinalIgnoreCase))
+                {
+                    var suspendEnd = eventData.TimeStamp.Ticks;
+                    var duration = (double)(suspendEnd - suspendTimeGCStart) / 10.0 / 1000.0;
+
+                    // write to channel
+                    _channel.Writer.TryWrite(new GCEventStatistics
+                    {
+                        Type = GCEventType.GCSuspend,
+                        GCSuspendStatistics = new GCSuspendStatistics
+                        {
+                            Reason = suspendReason,
+                            DurationMillisec = duration,
+                            Count = suspendCount,
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _onEventError?.Invoke(ex);
             }
         }
 

@@ -16,10 +16,12 @@ namespace DiagnosticCore.EventListeners
     {
         private readonly Channel<ThreadPoolEventStatistics> _channel;
         private readonly Func<ThreadPoolEventStatistics, Task> _onEventEmit;
+        private readonly Action<Exception> _onEventError;
 
-        public ThreadPoolEventListener(Func<ThreadPoolEventStatistics, Task> onEventEmit) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.Threading)
+        public ThreadPoolEventListener(Func<ThreadPoolEventStatistics, Task> onEventEmit, Action<Exception> onEventError) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.Threading)
         {
             _onEventEmit = onEventEmit;
+            _onEventError = onEventError;
             var channelOption = new BoundedChannelOptions(50)
             {
                 SingleReader = true,
@@ -35,48 +37,55 @@ namespace DiagnosticCore.EventListeners
             // IOThreadXxxx_ : Windows only.
             if (eventData.EventName.Equals("ThreadPoolWorkerThreadWait", StringComparison.OrdinalIgnoreCase)) return;
 
-            if (eventData.EventName.Equals("ThreadPoolWorkerThreadAdjustmentAdjustment", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                // do not track on "climing up" reason.
-                var r = eventData.Payload[2].ToString();
-                if (r == "3") return;
-
-                long time = eventData.TimeStamp.Ticks;
-                var averageThroughput = double.Parse(eventData.Payload[0].ToString());
-                var newWorkerThreadCount = uint.Parse(eventData.Payload[1].ToString());
-                var reason = uint.Parse(r);
-
-                // write to channel
-                _channel.Writer.TryWrite(new ThreadPoolEventStatistics
+                if (eventData.EventName.Equals("ThreadPoolWorkerThreadAdjustmentAdjustment", StringComparison.OrdinalIgnoreCase))
                 {
-                    Type = ThreadPoolStatisticType.ThreadAdjustment,
-                    ThreadAdjustment = new ThreadAdjustmentStatistics
+                    // do not track on "climing up" reason.
+                    var r = eventData.Payload[2].ToString();
+                    if (r == "3") return;
+
+                    long time = eventData.TimeStamp.Ticks;
+                    var averageThroughput = double.Parse(eventData.Payload[0].ToString());
+                    var newWorkerThreadCount = uint.Parse(eventData.Payload[1].ToString());
+                    var reason = uint.Parse(r);
+
+                    // write to channel
+                    _channel.Writer.TryWrite(new ThreadPoolEventStatistics
                     {
-                        Time = time,
-                        NewWorkerThreads = newWorkerThreadCount,
-                        AverageThrouput = averageThroughput,
-                        Reason = reason,
-                    },
-                });
+                        Type = ThreadPoolStatisticType.ThreadAdjustment,
+                        ThreadAdjustment = new ThreadAdjustmentStatistics
+                        {
+                            Time = time,
+                            NewWorkerThreads = newWorkerThreadCount,
+                            AverageThrouput = averageThroughput,
+                            Reason = reason,
+                        },
+                    });
+                }
+                else if (eventData.EventName.StartsWith("ThreadPoolWorkerThreadStart", StringComparison.OrdinalIgnoreCase)
+                    || eventData.EventName.StartsWith("ThreadPoolWorkerThreadStop", StringComparison.OrdinalIgnoreCase))
+                {
+                    long time = eventData.TimeStamp.Ticks;
+                    var activeWrokerThreadCount = uint.Parse(eventData.Payload[0].ToString());
+                    // always 0
+                    // var retiredWrokerThreadCount = uint.Parse(eventData.Payload[1].ToString());
+
+                    // write to channel
+                    _channel.Writer.TryWrite(new ThreadPoolEventStatistics
+                    {
+                        Type = ThreadPoolStatisticType.ThreadWorker,
+                        ThreadWorker = new ThreadWorkerStatistics
+                        {
+                            Time = time,
+                            ActiveWrokerThreads = activeWrokerThreadCount,
+                        },
+                    });
+                }
             }
-            else if (eventData.EventName.StartsWith("ThreadPoolWorkerThreadStart", StringComparison.OrdinalIgnoreCase) 
-                || eventData.EventName.StartsWith("ThreadPoolWorkerThreadStop", StringComparison.OrdinalIgnoreCase))
+            catch (Exception ex)
             {
-                long time = eventData.TimeStamp.Ticks;
-                var activeWrokerThreadCount = uint.Parse(eventData.Payload[0].ToString());
-                // always 0
-                // var retiredWrokerThreadCount = uint.Parse(eventData.Payload[1].ToString());
-
-                // write to channel
-                _channel.Writer.TryWrite(new ThreadPoolEventStatistics
-                {
-                    Type = ThreadPoolStatisticType.ThreadWorker,
-                    ThreadWorker = new ThreadWorkerStatistics
-                    {
-                        Time = time,
-                        ActiveWrokerThreads = activeWrokerThreadCount,
-                    },
-                });
+                _onEventError?.Invoke(ex);
             }
         }
 
