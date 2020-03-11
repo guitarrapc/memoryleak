@@ -86,21 +86,52 @@ namespace MemoryLeak.Controllers
         /// Start Tracker to profile diagnostics
         /// </summary>
         /// <returns></returns>
-        [HttpGet("startdumptracker")]
-        public ActionResult StartDumpTracker()
+        [HttpGet("starttracker")]
+        public ActionResult StartTracker()
+        {
+            ProfilerTracker.Current.Value.Start();
+            return Ok("started");
+        }
+        /// <summary>
+        /// Restart Tracker to profile diagnostics
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("restarttracker")]
+        public ActionResult RestartTracker()
         {
             ProfilerTracker.Current.Value.Restart();
-            return Ok("started");
+            return Ok("restarted");
         }
         /// <summary>
         /// Stop Tracker to profile diagnostics
         /// </summary>
         /// <returns></returns>
-        [HttpGet("stopdumptracker")]
-        public ActionResult StopDumpTracker()
+        [HttpGet("stoptracker")]
+        public ActionResult StopTracker()
         {
             ProfilerTracker.Current.Value.Stop();
             return Ok("stopped");
+        }
+        /// <summary>
+        /// Cancel Tracker to profile diagnostics
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("canceltracker")]
+        public ActionResult CancelTracker()
+        {
+            ProfilerTracker.Current.Value.Cancel();
+            return Ok("canceled");
+        }
+
+        /// <summary>
+        /// Reset Tracker CancellationTokenSource to profile diagnostics
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("resettracker")]
+        public ActionResult ResetTracker()
+        {
+            ProfilerTracker.Current.Value.Reset(new CancellationTokenSource());
+            return Ok("reseted");
         }
 
         /// <summary>

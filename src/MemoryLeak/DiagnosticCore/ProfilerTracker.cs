@@ -14,7 +14,7 @@ namespace DiagnosticCore
         /// <summary>
         /// CancellcationToken to cancel reading event channel.
         /// </summary>
-        public CancellationToken CancellationToken { get; set; } = default;
+        public CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
         /// <summary>
         /// Callback invoke when GC Event emitted and error.
         /// </summary>
@@ -61,7 +61,8 @@ namespace DiagnosticCore
         private readonly IProfiler[] profilerStats;
         private int initializedNum;
 
-        private ProfilerTracker() =>
+        private ProfilerTracker()
+        {
             // list Stats
             profilerStats = new IProfiler[] {
                 // event
@@ -73,6 +74,7 @@ namespace DiagnosticCore
                 new GCInfoTimerProfiler(Options.GCInfoTimerCallback.OnSuccess, Options.GCInfoTimerCallback.OnError, Options.TimerOption),
                 new ProcessInfoTimerProfiler(Options.ProcessInfoTimerCallback.OnSuccess, Options.ProcessInfoTimerCallback.OnError, Options.TimerOption),
             };
+        }
 
         /// <summary>
         /// Start tracking.
@@ -83,11 +85,14 @@ namespace DiagnosticCore
             Interlocked.Increment(ref initializedNum);
             if (initializedNum != 1) return;
 
+            // reset initialization status if cancelled.
+            Options.CancellationTokenSource.Token.Register(() => initializedNum = 0);
+
             foreach (var profile in profilerStats)
             {
                 profile.Start();
                 // FireAndForget
-                profile.ReadResultAsync(Options.CancellationToken);
+                profile.ReadResultAsync(Options.CancellationTokenSource.Token);
             }
         }
         /// <summary>
@@ -113,6 +118,29 @@ namespace DiagnosticCore
             {
                 stat.Stop();
             }
+        }
+
+        /// <summary>
+        /// Cancel tracking.
+        /// </summary>
+        public void Cancel()
+        {
+            Options.CancellationTokenSource.Cancel();
+        }
+
+        /// <summary>
+        /// Reset tracking.
+        /// Available when existing cancellation token source is cancelled.
+        /// </summary>
+        /// <param name="cts"></param>
+        public bool Reset(CancellationTokenSource cts)
+        {
+            if (Options.CancellationTokenSource.IsCancellationRequested)
+            {
+                Options.CancellationTokenSource = cts;
+                return true;
+            }
+            return false;
         }
     }
 }
