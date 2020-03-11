@@ -34,11 +34,15 @@ namespace DiagnosticCore.EventListeners
             if (eventData.EventName.Equals("ThreadPoolWorkerThreadWait", StringComparison.OrdinalIgnoreCase)) return;
             if (eventData.EventName.Equals("ThreadPoolWorkerThreadAdjustmentAdjustment", StringComparison.OrdinalIgnoreCase))
             {
+                // do not track on "climing up" reason.
+                var r = eventData.Payload[2].ToString();
+                if (r == "3") return;
+
                 long time = eventData.TimeStamp.Ticks;
                 var averageThroughput = double.Parse(eventData.Payload[0].ToString());
                 // non consistence value returns. ignore it.
                 //var newWorkerThreadCount = uint.Parse(eventData.Payload[1].ToString());
-                var reason = uint.Parse(eventData.Payload[2].ToString());
+                var reason = uint.Parse(r);
                 // write to channel
                 _channel.Writer.TryWrite(new EtwThreadPoolStatistics
                 {

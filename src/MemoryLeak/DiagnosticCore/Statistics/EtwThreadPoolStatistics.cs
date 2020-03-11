@@ -49,11 +49,10 @@ namespace DiagnosticCore.Statistics
         //public uint NewWorkerThreads { get; set; }
 
         /// <summary>
-        /// Reason	win:UInt32	Reason for the adjustment.
         /// 0x00 - Warmup.
         /// 0x01 - Initializing.
         /// 0x02 - Random move.
-        /// 0x03 - Climbing move.
+        /// 0x03 - Climbing move. // no usable data. as it were just thread adjustment with hill climing heulistics.
         /// 0x04 - Change point.
         /// 0x05 - Stabilizing.
         /// 0x06 - Starvation.
