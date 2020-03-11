@@ -14,5 +14,6 @@ namespace DiagnosticCore.Statistics
         public int ThreadCount { get; set; }
         public long QueueLength { get; set; }
         public long CompletedItemsCount { get; set; }
+        public long LockContentionCount { get; set; }
     }
 }

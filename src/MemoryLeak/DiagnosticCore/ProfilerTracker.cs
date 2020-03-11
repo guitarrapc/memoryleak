@@ -46,17 +46,19 @@ namespace DiagnosticCore
 
         public static ProfilerTrackerOptions Options { get; set; } = new ProfilerTrackerOptions();
 
-        private readonly IProfilerStat[] profilerStats;
+        private readonly IProfiler[] profilerStats;
         private bool initialized;
 
         public ProfilerTracker() =>
             // list Stat
-            profilerStats = new IProfilerStat[] {
-                new GCEventStat(Options?.GCEventProfilerCallback),
-                new ThreadPoolEventStat(Options?.ThreadPoolEventProfilerCallback),
-                new ContentionEventStat(Options?.ContentionEventProfilerCallback),
-                new ThreadInfoTimerStat(Options?.ThreadInfoTimerCallback, Options.TimerOption),
-                new GCInfoTimerStat(Options?.GCInfoTimerCallback, Options.TimerOption)
+            profilerStats = new IProfiler[] {
+                // event
+                new GCEventProfiler(Options?.GCEventProfilerCallback),
+                new ThreadPoolEventProfiler(Options?.ThreadPoolEventProfilerCallback),
+                new ContentionEventProfiler(Options?.ContentionEventProfilerCallback),
+                // timer
+                new ThreadInfoTimerProfiler(Options?.ThreadInfoTimerCallback, Options.TimerOption),
+                new GCInfoTimerProfiler(Options?.GCInfoTimerCallback, Options.TimerOption),
             };
 
         public void Start()

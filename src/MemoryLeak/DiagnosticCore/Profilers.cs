@@ -7,20 +7,20 @@ using DiagnosticCore.TimerListeners;
 
 namespace DiagnosticCore
 {
-    public interface IProfilerStat
+    public interface IProfiler
     {
         void Start();
         void Restart();
         void Stop();
         Task ReadResultAsync(CancellationToken cancellationToken);
     }
-    public class GCEventStat : IProfilerStat
+    public class GCEventProfiler : IProfiler
     {
         private readonly GCEventListener listener;
 
-        public GCEventStat(Func<GCEventStatistics, Task> onEventEmi)
+        public GCEventProfiler(Func<GCEventStatistics, Task> onEventEmit)
         {
-            listener = new GCEventListener(onEventEmi);
+            listener = new GCEventListener(onEventEmit);
         }
         public void Restart()
         {
@@ -31,7 +31,7 @@ namespace DiagnosticCore
         {
             listener.RunWithCallback(eventData => listener.EventCreatedHandler(eventData), () =>
             {
-                Console.WriteLine($"Start: {nameof(GCEventStat)}");
+                Console.WriteLine($"Start: {nameof(GCEventProfiler)}");
             });
         }
 
@@ -46,13 +46,13 @@ namespace DiagnosticCore
         }
     }
 
-    public class ThreadPoolEventStat : IProfilerStat
+    public class ThreadPoolEventProfiler : IProfiler
     {
         private readonly ThreadPoolEventListener listener;
 
-        public ThreadPoolEventStat(Func<ThreadPoolEventStatistics, Task> onEventEmi)
+        public ThreadPoolEventProfiler(Func<ThreadPoolEventStatistics, Task> onEventEmit)
         {
-            listener = new ThreadPoolEventListener(onEventEmi);
+            listener = new ThreadPoolEventListener(onEventEmit);
         }
         public void Restart()
         {
@@ -63,7 +63,7 @@ namespace DiagnosticCore
         {
             listener.RunWithCallback(eventData => listener.EventCreatedHandler(eventData), () =>
             {
-                Console.WriteLine($"Start: {nameof(ThreadPoolEventStat)}");
+                Console.WriteLine($"Start: {nameof(ThreadPoolEventProfiler)}");
             });
         }
 
@@ -78,13 +78,13 @@ namespace DiagnosticCore
         }
     }
 
-    public class ContentionEventStat : IProfilerStat
+    public class ContentionEventProfiler : IProfiler
     {
         private readonly ContentionEventListener listener;
 
-        public ContentionEventStat(Func<ContentionEventStatistics, Task> onEventEmi)
+        public ContentionEventProfiler(Func<ContentionEventStatistics, Task> onEventEmit)
         {
-            listener = new ContentionEventListener(onEventEmi);
+            listener = new ContentionEventListener(onEventEmit);
         }
         public void Restart()
         {
@@ -95,7 +95,7 @@ namespace DiagnosticCore
         {
             listener.RunWithCallback(eventData => listener.EventCreatedHandler(eventData), () =>
             {
-                Console.WriteLine($"Start: {nameof(ContentionEventStat)}");
+                Console.WriteLine($"Start: {nameof(ContentionEventProfiler)}");
             });
         }
 
@@ -110,11 +110,11 @@ namespace DiagnosticCore
         }
     }
 
-    public class ThreadInfoTimerStat : IProfilerStat
+    public class ThreadInfoTimerProfiler : IProfiler
     {
         private readonly ThreadInfoTimerListener listener;
 
-        public ThreadInfoTimerStat(Func<ThreadInfoStatistics, Task> onEventEmit, (TimeSpan dueTime, TimeSpan interval) options)
+        public ThreadInfoTimerProfiler(Func<ThreadInfoStatistics, Task> onEventEmit, (TimeSpan dueTime, TimeSpan interval) options)
         {
             listener = new ThreadInfoTimerListener(onEventEmit, options.dueTime, options.interval);
         }
@@ -128,7 +128,7 @@ namespace DiagnosticCore
         {
             listener.RunWithCallback(() => listener.EventCreatedHandler(), () =>
             {
-                Console.WriteLine($"Start: {nameof(ThreadInfoTimerStat)}");
+                Console.WriteLine($"Start: {nameof(ThreadInfoTimerProfiler)}");
             });
         }
 
@@ -143,11 +143,11 @@ namespace DiagnosticCore
         }
     }
 
-    public class GCInfoTimerStat : IProfilerStat
+    public class GCInfoTimerProfiler : IProfiler
     {
         private readonly GCInfoTimerListener listener;
 
-        public GCInfoTimerStat(Func<GCInfoStatistics, Task> onEventEmit, (TimeSpan dueTime, TimeSpan interval) options)
+        public GCInfoTimerProfiler(Func<GCInfoStatistics, Task> onEventEmit, (TimeSpan dueTime, TimeSpan interval) options)
         {
             listener = new GCInfoTimerListener(onEventEmit, options.dueTime, options.interval);
         }
@@ -161,7 +161,7 @@ namespace DiagnosticCore
         {
             listener.RunWithCallback(() => listener.EventCreatedHandler(), () =>
             {
-                Console.WriteLine($"Start: {nameof(GCInfoTimerStat)}");
+                Console.WriteLine($"Start: {nameof(GCInfoTimerProfiler)}");
             });
         }
 

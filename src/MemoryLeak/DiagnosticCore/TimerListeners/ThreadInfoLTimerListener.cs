@@ -89,6 +89,7 @@ namespace DiagnosticCore.TimerListeners
                 var threadCount = ThreadPool.ThreadCount;
                 var queueLength = ThreadPool.PendingWorkItemCount;
                 var completedItemsCount = ThreadPool.CompletedWorkItemCount;
+                var lockContentionCount = Monitor.LockContentionCount;
 
                 _channel.Writer.TryWrite(new ThreadInfoStatistics
                 {
@@ -100,6 +101,7 @@ namespace DiagnosticCore.TimerListeners
                     ThreadCount = threadCount,
                     QueueLength = queueLength,
                     CompletedItemsCount = completedItemsCount,
+                    LockContentionCount = lockContentionCount,
                 });
             }
             catch (Exception ex)
