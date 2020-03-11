@@ -12,6 +12,6 @@ namespace DiagnosticCore.Statistics
         /// 1 : native
         /// </summary>
         public byte Flag { get; set; }
-        public uint DurationNs { get; set; }
+        public double DurationNs { get; set; }
     }
 }

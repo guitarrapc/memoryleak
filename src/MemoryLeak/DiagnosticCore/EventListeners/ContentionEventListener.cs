@@ -37,7 +37,7 @@ namespace DiagnosticCore.EventListeners
             {
                 long time = eventData.TimeStamp.Ticks;
                 var flag = byte.Parse(eventData.Payload[0].ToString());
-                var durationNs = uint.Parse(eventData.Payload[2].ToString());
+                var durationNs = double.Parse(eventData.Payload[2].ToString());
 
                 // write to channel
                 _channel.Writer.TryWrite(new EtwContentionStatistics
