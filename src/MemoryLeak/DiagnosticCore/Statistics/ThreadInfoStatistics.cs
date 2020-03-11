@@ -11,5 +11,8 @@ namespace DiagnosticCore.Statistics
         public int AvailableCompletionPortThreads { get; set; }
         public int MaxWorkerThreads { get; set; }
         public int MaxCompletionPortThreads { get; set; }
+        public int ThreadCount { get; set; }
+        public long QueueLength { get; set; }
+        public long CompletedItemsCount { get; set; }
     }
 }

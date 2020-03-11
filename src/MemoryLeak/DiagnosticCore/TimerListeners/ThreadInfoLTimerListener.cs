@@ -83,16 +83,23 @@ namespace DiagnosticCore.TimerListeners
             {
                 var date = DateTime.Now;
 
-                // todo: get threadpool property `ThreadPool.ThreadCount`? https://github.com/dotnet/corefx/pull/37401/files
                 ThreadPool.GetAvailableThreads(out var availableWorkerThreads, out var availableCompletionPortThreads);
                 ThreadPool.GetMaxThreads(out var maxWorkerThreads, out var maxCompletionPortThreads);
+                // netcoreapp3.0 and above: get threadpool property `ThreadPool.ThreadCount` https://github.com/dotnet/corefx/pull/37401/files
+                var threadCount = ThreadPool.ThreadCount;
+                var queueLength = ThreadPool.PendingWorkItemCount;
+                var completedItemsCount = ThreadPool.CompletedWorkItemCount;
 
                 _channel.Writer.TryWrite(new TimerThreadInfoStatistics
                 {
+                    Date = date,
                     AvailableWorkerThreads = availableWorkerThreads,
                     AvailableCompletionPortThreads = availableCompletionPortThreads,
                     MaxWorkerThreads = maxWorkerThreads,
                     MaxCompletionPortThreads = maxCompletionPortThreads,
+                    ThreadCount = threadCount,
+                    QueueLength = queueLength,
+                    CompletedItemsCount = completedItemsCount,
                 });
             }
             catch (Exception ex)

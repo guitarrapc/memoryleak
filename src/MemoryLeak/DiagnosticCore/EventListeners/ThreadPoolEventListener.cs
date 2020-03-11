@@ -31,6 +31,7 @@ namespace DiagnosticCore.EventListeners
 
         public override void EventCreatedHandler(EventWrittenEventArgs eventData)
         {
+            // ThreadPoolWorkerThreadAdjustmentAdjustment : ThreadPool starvation on Reason 7
             if (eventData.EventName.Equals("ThreadPoolWorkerThreadWait", StringComparison.OrdinalIgnoreCase)) return;
             if (eventData.EventName.Equals("ThreadPoolWorkerThreadAdjustmentAdjustment", StringComparison.OrdinalIgnoreCase))
             {

@@ -48,6 +48,7 @@ namespace MemoryLeak
             ProfilerTracker.Current.Value.Start();
         }
 
+        // TODO: Exceptions thrown and caught
         // TODO: Heap memory
 
         /// <summary>

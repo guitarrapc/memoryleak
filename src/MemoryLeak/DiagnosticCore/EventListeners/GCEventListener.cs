@@ -69,6 +69,8 @@ namespace DiagnosticCore.EventListeners
         ///</remarks>
         public override void EventCreatedHandler(EventWrittenEventArgs eventData)
         {
+            // GCStart & GCEnd = Actual GC
+            // GCSuspendEEBegin && GCRestartEEEnd = GC Suspension + Pause (include GC Start-End)
             if (eventData.EventName.StartsWith("GCStart_", StringComparison.OrdinalIgnoreCase)) // GCStart_V1 / V2 ...
             {
                 timeGCStart = eventData.TimeStamp.Ticks;
