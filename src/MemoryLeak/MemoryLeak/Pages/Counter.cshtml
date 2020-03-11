@@ -38,6 +38,8 @@
 <body>
     <p>
         <button id="collect-btn" type="button" style="visibility:visible">Collect</button>
+        <button id="current-btn" type="button" style="visibility:visible">Current</button>
+        <button id="final-btn" type="button" style="visibility:visible">Final</button>
     </p>
 
     <div class="container">
@@ -113,7 +115,16 @@
                     {
                         label: 'RPS',
                         data: []
-                    }
+                    },
+                    {
+                        label: 'TotalAllocated',
+                        data: [],
+                        yAxisID: 'y-axis-memory',
+                        borderColor: 'pink',
+                        backgroundColor: 'pink',
+                        pointRadius: 0,
+                        fill: false
+                    },
                 ]
             },
             options: {
@@ -164,6 +175,8 @@
 
         const diagnosticsUrl = "/api/counter/diagnostics";
         const collectUrl = "/api/counter/collect";
+        const currentUrl = "/api/counter/current";
+        const finalUrl = "/api/counter/final";
 
         const maxEntries = 50;
         const interval = 300;
@@ -174,6 +187,7 @@
         var generation2 = memoryChart.data.datasets[4].data;
         var cpu = memoryChart.data.datasets[5].data;
         var rps = memoryChart.data.datasets[6].data;
+        var totalAllocated = memoryChart.data.datasets[7].data;
         var previousGen0 = 0,
             previousGen1 = 0,
             previousGen2 = 0;
@@ -187,11 +201,12 @@
                     var now = new Date();
                     let allocValue = diagnostics.allocated / 1000000
                     let workingsetValue = diagnostics.workingSet / 1000000
-                    let gen2value = diagnostics.gen2
-                    let gen1value = diagnostics.gen1
                     let gen0value = diagnostics.gen0
+                    let gen1value = diagnostics.gen1
+                    let gen2value = diagnostics.gen2
                     let cpuValue = diagnostics.cpu
                     let rpsValue = diagnostics.rps
+                    let totalAllocValue = diagnostics.totalAllocated / 1000000
 
                     memoryChart.data.datasets[0].label = `Allocated (${Math.round(allocValue)})`
                     allocated.push({ x: now, y: allocValue });
@@ -199,20 +214,23 @@
                     memoryChart.data.datasets[1].label = `Working Set (${Math.round(workingsetValue)})`
                     workingSet.push({ x: now, y: workingsetValue });
 
-                    memoryChart.data.datasets[2].label = `Gen 2 (${Math.round(gen2value)})`;
-                    generation2.push({ x: now, y: gen2value });
+                    memoryChart.data.datasets[2].label = `Gen 2 (${Math.round(gen0value)})`;
+                    generation0.push({ x: now, y: gen0value });
 
                     memoryChart.data.datasets[3].label = `Gen 1 (${Math.round(gen1value)})`;
                     generation1.push({ x: now, y: gen1value });
 
-                    memoryChart.data.datasets[4].label = `Gen 0 (${Math.round(gen0value)})`;
-                    generation0.push({ x: now, y: gen0value });
+                    memoryChart.data.datasets[4].label = `Gen 0 (${Math.round(gen2value)})`;
+                    generation2.push({ x: now, y: gen2value });
 
                     memoryChart.data.datasets[5].label = `CPU (${Math.round(cpuValue)}%)`;
                     //cpu.push({ x: now, y: cpuValue });
 
                     memoryChart.data.datasets[6].label = `RPS (${Math.round(rpsValue)})`;
                     //rps.push({x : now, y: rpsValue});
+
+                    memoryChart.data.datasets[7].label = `TotalAllocated (${Math.round(totalAllocValue)})`
+                    totalAllocated.push({ x: now, y: totalAllocValue });
 
                     if (previousGen2 < diagnostics.gen2) {
                         generation2.push({ x: now, y: 1 });
@@ -242,6 +260,8 @@
                         while (generation0.length > 0 && generation0[0].x < firstDate) generation0.shift();
                         while (generation1.length > 0 && generation1[0].x < firstDate) generation1.shift();
                         while (generation2.length > 0 && generation2[0].x < firstDate) generation2.shift();
+
+                        totalAllocated.shift();
                     }
 
                     memoryChart.update();
@@ -249,7 +269,8 @@
         }, interval);
 
         document.getElementById("collect-btn").addEventListener("click", function () { fetch(collectUrl); });
-
+        document.getElementById("current-btn").addEventListener("click", function () { fetch(currentUrl); });
+        document.getElementById("final-btn").addEventListener("click", function () { fetch(finalUrl); });
 
     </script>
 </body>

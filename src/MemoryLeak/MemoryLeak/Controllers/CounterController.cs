@@ -1,8 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DiagnosticCore;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
+using DiagnosticCore.Oop;
+using System.Collections.Generic;
+using System.Text.Json;
 
 namespace MemoryLeak.Controllers
 {
@@ -31,14 +37,15 @@ namespace MemoryLeak.Controllers
     [ApiController]
     public class CounterController : ControllerBase
     {
-        private static Process _process = Process.GetCurrentProcess();
+        private static readonly Process _process = Process.GetCurrentProcess();
         private static TimeSpan _oldCPUTime = TimeSpan.Zero;
         private static DateTime _lastMonitorTime = DateTime.UtcNow;
         private static DateTime _lastRpsTime = DateTime.UtcNow;
         private static double _cpu = 0, _rps = 0;
         private static readonly double RefreshRate = TimeSpan.FromSeconds(1).TotalMilliseconds;
         public static long Requests = 0;
-
+        
+        // GC api
         [HttpGet("collect")]
         public ActionResult GetCollect()
         {
@@ -49,6 +56,146 @@ namespace MemoryLeak.Controllers
             return Ok();
         }
 
+        [HttpGet("current")]
+        public ActionResult GetCurrent()
+        {
+            AllocationTracker<GcStats>.Current.Track();
+            ThreadingTracker<ThreadingStats>.Current.Track();
+            return Ok(new
+            {
+                GC = new
+                {
+                    AllocationTracker<GcStats>.Current.CurrentStat,
+                    AllocationTracker<GcStats>.Current.DiffStat,
+                },
+                Threading = new
+                {
+                    ThreadingTracker<ThreadingStats>.Current.CurrentStat,
+                    ThreadingTracker<ThreadingStats>.Current.DiffStat,
+                },
+            });
+        }
+
+        [HttpGet("final")]
+        public ActionResult GetFinal()
+        {
+            AllocationTracker<GcStats>.Current.Final();
+            AllocationTracker<ThreadingStats>.Current.Final();
+            return Ok();
+        }
+
+        /// <summary>
+        /// Start Tracker to profile diagnostics
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("starttracker")]
+        public ActionResult StartTracker()
+        {
+            ProfilerTracker.Current.Value.Start();
+            return Ok("started");
+        }
+        /// <summary>
+        /// Restart Tracker to profile diagnostics
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("restarttracker")]
+        public ActionResult RestartTracker()
+        {
+            ProfilerTracker.Current.Value.Restart();
+            return Ok("restarted");
+        }
+        /// <summary>
+        /// Stop Tracker to profile diagnostics
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("stoptracker")]
+        public ActionResult StopTracker()
+        {
+            ProfilerTracker.Current.Value.Stop();
+            return Ok("stopped");
+        }
+        /// <summary>
+        /// Cancel Tracker to profile diagnostics
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("canceltracker")]
+        public ActionResult CancelTracker()
+        {
+            ProfilerTracker.Current.Value.Cancel();
+            return Ok("canceled");
+        }
+
+        /// <summary>
+        /// Reset Tracker CancellationTokenSource to profile diagnostics
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("resettracker")]
+        public ActionResult ResetTracker()
+        {
+            ProfilerTracker.Current.Value.Reset(new CancellationTokenSource());
+            return Ok("reseted");
+        }
+
+        /// <summary>
+        /// Reset Tracker CancellationTokenSource to profile diagnostics
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("statustracker")]
+        public ActionResult StatusTracker()
+        {
+            var dic = new Dictionary<string, bool>();
+            ProfilerTracker.Current.Value.Status(arg => dic.Add(arg.Name, arg.Enabled));
+            var json = JsonSerializer.Serialize(dic);
+            return Ok(json);
+        }
+
+        /// <summary>
+        /// increate count but could not cause Thread starvation.
+        /// </summary>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        [HttpGet("thread/{count}")]
+        public async Task<ActionResult> StartThread(int count = 100_000)
+        {
+            // start Threads in threadpool
+            var tasks = Enumerable.Range(1, count)
+                        .Select(x => Task.Run(() => 1))
+                        .ToArray();
+            await Task.WhenAll(tasks);
+            return Ok(count);
+        }
+
+        /// <summary>
+        /// Increase count to make thread starvation.
+        /// </summary>
+        private static object _lock = new Object();
+        [HttpGet("contention/{count}")]
+        public async Task<ActionResult> Contention(int count = 10)
+        {
+            var _workers = new Task[count];
+            for (int i = 0; i < count; i++)
+            {
+                _workers[i] = Task.Run(async () =>
+                {
+                    var count = 0;
+                    while (true)
+                    {
+                        lock (_lock)
+                        {
+                            Thread.Sleep(200);
+                            count++;
+                            if (count > 3)
+                                break;
+                        }
+                    }
+                });
+            }
+            await Task.WhenAll(_workers);
+
+            return Ok(count);
+        }
+
+        // diagnostics
         [HttpGet("diagnostics")]
         public ActionResult<CounterMetrics> GetDiagnostics()
         {
@@ -81,6 +228,7 @@ namespace MemoryLeak.Controllers
 
                 // The memory occupied by objects.
                 Allocated = GC.GetTotalMemory(false),
+                TotalAllocated = GC.GetTotalAllocatedBytes(false),
 
                 // The working set includes both shared and private data. The shared data includes the pages that contain all the 
                 // instructions that the process executes, including instructions in the process modules and the system libraries.
@@ -111,6 +259,7 @@ namespace MemoryLeak.Controllers
         {
             public int? PID { get; set; }
             public long? Allocated { get; set; }
+            public long? TotalAllocated { get; set; }
             public long? WorkingSet { get; set; }
             public long? PrivateBytes { get; set; }
             public int? Gen0 { get; set; }
@@ -146,6 +295,16 @@ namespace MemoryLeak.Controllers
                 hash.Add(CPU);
                 hash.Add(RPS);
                 return hash.ToHashCode();
+            }
+
+            public static bool operator ==(CounterMetrics left, CounterMetrics right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(CounterMetrics left, CounterMetrics right)
+            {
+                return !(left == right);
             }
         }
     }
