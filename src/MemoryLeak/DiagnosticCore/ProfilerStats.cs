@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Diagnostics.Tracing;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using DiagnosticCore.EventListeners;
 using DiagnosticCore.Statistics;
@@ -20,7 +18,7 @@ namespace DiagnosticCore
     {
         private readonly GCEventListener listener;
 
-        public GCEventStat(Func<EtwGCStatistics, Task> onEventEmi)
+        public GCEventStat(Func<GCEventStatistics, Task> onEventEmi)
         {
             listener = new GCEventListener(onEventEmi);
         }
@@ -52,7 +50,7 @@ namespace DiagnosticCore
     {
         private readonly ThreadPoolEventListener listener;
 
-        public ThreadPoolEventStat(Func<EtwThreadPoolStatistics, Task> onEventEmi)
+        public ThreadPoolEventStat(Func<ThreadPoolEventStatistics, Task> onEventEmi)
         {
             listener = new ThreadPoolEventListener(onEventEmi);
         }
@@ -84,7 +82,7 @@ namespace DiagnosticCore
     {
         private readonly ContentionEventListener listener;
 
-        public ContentionEventStat(Func<EtwContentionStatistics, Task> onEventEmi)
+        public ContentionEventStat(Func<ContentionEventStatistics, Task> onEventEmi)
         {
             listener = new ContentionEventListener(onEventEmi);
         }
@@ -112,13 +110,13 @@ namespace DiagnosticCore
         }
     }
 
-    public class TimerThreadInfoStat : IProfilerStat
+    public class ThreadInfoTimerStat : IProfilerStat
     {
-        private readonly ThreadInfoLTimerListener listener;
+        private readonly ThreadInfoTimerListener listener;
 
-        public TimerThreadInfoStat(Func<TimerThreadInfoStatistics, Task> onEventEmit, (TimeSpan dueTime, TimeSpan interval) options)
+        public ThreadInfoTimerStat(Func<ThreadInfoStatistics, Task> onEventEmit, (TimeSpan dueTime, TimeSpan interval) options)
         {
-            listener = new ThreadInfoLTimerListener(onEventEmit, options.dueTime, options.interval);
+            listener = new ThreadInfoTimerListener(onEventEmit, options.dueTime, options.interval);
         }
 
         public void Restart()
@@ -130,7 +128,40 @@ namespace DiagnosticCore
         {
             listener.RunWithCallback(() => listener.EventCreatedHandler(), () =>
             {
-                Console.WriteLine($"Start: {nameof(TimerThreadInfoStat)}");
+                Console.WriteLine($"Start: {nameof(ThreadInfoTimerStat)}");
+            });
+        }
+
+        public void Stop()
+        {
+            listener.Stop();
+        }
+
+        public async Task ReadResultAsync(CancellationToken cancellationToken)
+        {
+            await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    public class GCInfoTimerStat : IProfilerStat
+    {
+        private readonly GCInfoTimerListener listener;
+
+        public GCInfoTimerStat(Func<GCInfoStatistics, Task> onEventEmit, (TimeSpan dueTime, TimeSpan interval) options)
+        {
+            listener = new GCInfoTimerListener(onEventEmit, options.dueTime, options.interval);
+        }
+
+        public void Restart()
+        {
+            listener.Restart();
+        }
+
+        public void Start()
+        {
+            listener.RunWithCallback(() => listener.EventCreatedHandler(), () =>
+            {
+                Console.WriteLine($"Start: {nameof(GCInfoTimerStat)}");
             });
         }
 

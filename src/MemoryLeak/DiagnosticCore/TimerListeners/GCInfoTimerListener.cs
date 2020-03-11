@@ -9,34 +9,43 @@ using DiagnosticCore.Statistics;
 
 namespace DiagnosticCore.TimerListeners
 {
-    public class ThreadInfoTimerListener : TimerListenerBase, IDisposable, IChannelReader
+    public class GCInfoTimerListener : TimerListenerBase, IDisposable, IChannelReader
     {
         static int initializedCount;
         static Timer timer;
 
-        public ChannelReader<ThreadInfoStatistics> Reader { get; set; }
+        public ChannelReader<GCInfoStatistics> Reader { get; set; }
 
-        private readonly Channel<ThreadInfoStatistics> _channel;
-        private readonly Func<ThreadInfoStatistics, Task> _onEventEmit;
+        private readonly Channel<GCInfoStatistics> _channel;
+        private readonly Func<GCInfoStatistics, Task> _onEventEmit;
         private readonly TimeSpan _dueTime;
         private readonly TimeSpan _intervalPeriod;
+
+        private readonly Func<int, ulong> _getGenerationSizeDelegate;
+        private readonly Func<int> _getLastGCPercentTimeInGC;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="dueTime">The amount of time delay before timer starts.</param>
         /// <param name="intervalPeriod">The time inteval between the invocation of timer.</param>
-        public ThreadInfoTimerListener(Func<ThreadInfoStatistics, Task> onEventEmit, TimeSpan dueTime, TimeSpan intervalPeriod)
+        public GCInfoTimerListener(Func<GCInfoStatistics, Task> onEventEmit, TimeSpan dueTime, TimeSpan intervalPeriod)
         {
             _onEventEmit = onEventEmit;
             _dueTime = dueTime;
             _intervalPeriod = intervalPeriod;
-            _channel = Channel.CreateBounded<ThreadInfoStatistics>(new BoundedChannelOptions(50)
+            _channel = Channel.CreateBounded<GCInfoStatistics>(new BoundedChannelOptions(50)
             {
                 SingleWriter = true,
                 SingleReader = true,
                 FullMode = BoundedChannelFullMode.DropOldest,
             });
+
+            var methodGetGenerationSize = typeof(GC).GetMethod("GetGenerationSize", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.FlattenHierarchy);
+            _getGenerationSizeDelegate = (Func<int, ulong>)methodGetGenerationSize?.CreateDelegate(typeof(Func<int, ulong>));
+
+            var methodGetLastGCPercentTimeInGC = typeof(GC).GetMethod("GetLastGCPercentTimeInGC", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.FlattenHierarchy);
+            _getLastGCPercentTimeInGC = (Func<int>)methodGetLastGCPercentTimeInGC?.CreateDelegate(typeof(Func<int>));
         }
 
         protected override void OnEventWritten()
@@ -82,24 +91,29 @@ namespace DiagnosticCore.TimerListeners
             try
             {
                 var date = DateTime.Now;
+                var gcHeapSize = GC.GetTotalMemory(false); // bytes
+                var gen0Count = GC.CollectionCount(0);
+                var gen1Count = GC.CollectionCount(1);
+                var gen2Count = GC.CollectionCount(2);
+                var memoryInfo = GC.GetGCMemoryInfo();
+                var gen0Size = _getGenerationSizeDelegate(0);
+                var gen1Size = _getGenerationSizeDelegate(1);
+                var gen2Size = _getGenerationSizeDelegate(2);
+                var lohSize = _getGenerationSizeDelegate(3);
+                var timeInGc = _getLastGCPercentTimeInGC();
 
-                ThreadPool.GetAvailableThreads(out var availableWorkerThreads, out var availableCompletionPortThreads);
-                ThreadPool.GetMaxThreads(out var maxWorkerThreads, out var maxCompletionPortThreads);
-                // netcoreapp3.0 and above: get threadpool property `ThreadPool.ThreadCount` https://github.com/dotnet/corefx/pull/37401/files
-                var threadCount = ThreadPool.ThreadCount;
-                var queueLength = ThreadPool.PendingWorkItemCount;
-                var completedItemsCount = ThreadPool.CompletedWorkItemCount;
-
-                _channel.Writer.TryWrite(new ThreadInfoStatistics
+                _channel.Writer.TryWrite(new GCInfoStatistics
                 {
                     Date = date,
-                    AvailableWorkerThreads = availableWorkerThreads,
-                    AvailableCompletionPortThreads = availableCompletionPortThreads,
-                    MaxWorkerThreads = maxWorkerThreads,
-                    MaxCompletionPortThreads = maxCompletionPortThreads,
-                    ThreadCount = threadCount,
-                    QueueLength = queueLength,
-                    CompletedItemsCount = completedItemsCount,
+                    Gen0Count　=gen0Count,
+                    Gen1Count = gen1Count,
+                    Gen2Count = gen2Count,
+                    Gen0Size = gen0Size,
+                    Gen1Size = gen1Size,
+                    Gen2Size = gen2Size,
+                    LohSize = lohSize,
+                    HeapSize = gcHeapSize,
+                    TimeInGc = timeInGc,
                 });
             }
             catch (Exception ex)

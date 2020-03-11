@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DiagnosticCore.Statistics
 {
-    public struct EtwContentionStatistics
+    public struct ContentionEventStatistics
     {
         public long Time { get; set; }
         /// <summary>

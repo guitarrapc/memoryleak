@@ -14,7 +14,7 @@ namespace DiagnosticCore.Statistics
     /// <summary>
     /// Data structure represent GC statistics
     /// </summary>
-    public struct EtwGCStatistics
+    public struct GCEventStatistics
     {
         public GCEventType Type { get; set; }
         public GCStartEndStatistics GCStartEndStatistics { get; set; }

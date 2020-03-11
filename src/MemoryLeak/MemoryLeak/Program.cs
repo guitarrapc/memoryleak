@@ -40,10 +40,11 @@ namespace MemoryLeak
             ProfilerTracker.Options = new ProfilerTrackerOptions
             {
                 CancellationToken = default,
-                GCProfilerCallback = GCProfilerCallback,
-                ThreadProfilerCallback = ThreadProfilerCallback,
-                ContentionProfilerCallback = ContentionProfilerCallback,
-                TimerThreadInfoCallback = TimerThreadInfoCallback,
+                GCEventProfilerCallback = GCEventProfilerCallback,
+                ThreadPoolEventProfilerCallback = ThreadPoolEventProfilerCallback,
+                ContentionEventProfilerCallback = ContentionEventProfilerCallback,
+                ThreadInfoTimerCallback = ThreadInfoTimerCallback,
+                GCInfoTimerCallback = GCInfoTimerCallback,
             };
             ProfilerTracker.Current.Value.Start();
         }
@@ -56,7 +57,7 @@ namespace MemoryLeak
         /// </summary>
         /// <param name="arg"></param>
         /// <returns></returns>
-        private static Task GCProfilerCallback(EtwGCStatistics arg)
+        private static Task GCEventProfilerCallback(GCEventStatistics arg)
         {
             // send metrics to datadog or any favor you like.
             if (arg.Type == GCEventType.GCStartEnd)
@@ -74,7 +75,7 @@ namespace MemoryLeak
         /// </summary>
         /// <param name="arg"></param>
         /// <returns></returns>
-        private static Task ThreadProfilerCallback(EtwThreadPoolStatistics arg)
+        private static Task ThreadPoolEventProfilerCallback(ThreadPoolEventStatistics arg)
         {
             if (arg.Type == ThreadPoolStatisticType.ThreadWorker)
             {
@@ -97,7 +98,7 @@ namespace MemoryLeak
         /// </summary>
         /// <param name="arg"></param>
         /// <returns></returns>
-        private static Task ContentionProfilerCallback(EtwContentionStatistics arg)
+        private static Task ContentionEventProfilerCallback(ContentionEventStatistics arg)
         {
             //Console.WriteLine($"Contention Flag {arg.Flag}; DurationNs {arg.DurationNs}");
             return Task.CompletedTask;
@@ -108,9 +109,20 @@ namespace MemoryLeak
         /// </summary>
         /// <param name="arg"></param>
         /// <returns></returns>
-        private static Task TimerThreadInfoCallback(TimerThreadInfoStatistics arg)
+        private static Task ThreadInfoTimerCallback(ThreadInfoStatistics arg)
         {
             Console.WriteLine($"ThreadInfo AvailableWorkerThreads {arg.AvailableWorkerThreads}; MaxWorkerThreads {arg.MaxWorkerThreads};");
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// GCInfo
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        private static Task GCInfoTimerCallback(GCInfoStatistics arg)
+        {
+            Console.WriteLine($"GCInfo HeapSize {arg.HeapSize}; Gen0Count {arg.Gen0Count}; Gen1Count {arg.Gen1Count}; Gen2Count {arg.Gen2Count}; Gen0Size {arg.Gen0Size}; Gen1Size {arg.Gen1Size}; Gen2Size {arg.Gen2Size}; LohSize {arg.LohSize}; TimeInGc {arg.TimeInGc}");
             return Task.CompletedTask;
         }
     }

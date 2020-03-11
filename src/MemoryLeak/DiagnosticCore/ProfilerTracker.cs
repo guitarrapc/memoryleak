@@ -12,23 +12,27 @@ namespace DiagnosticCore
         /// <summary>
         /// Callback invoke when GC Event emitted
         /// </summary>
-        public Func<EtwGCStatistics, Task> GCProfilerCallback { get; set; }
+        public Func<GCEventStatistics, Task> GCEventProfilerCallback { get; set; }
         /// <summary>
         /// Callback invoke when ThreadPool Event emitted
         /// </summary>
-        public Func<EtwThreadPoolStatistics, Task> ThreadProfilerCallback { get; set; }
+        public Func<ThreadPoolEventStatistics, Task> ThreadPoolEventProfilerCallback { get; set; }
         /// <summary>
         /// Callback invoke when Contention Event emitted (generally lock event)
         /// </summary>
-        public Func<EtwContentionStatistics, Task> ContentionProfilerCallback { get; set; }
+        public Func<ContentionEventStatistics, Task> ContentionEventProfilerCallback { get; set; }
         /// <summary>
         /// Callback invoke when Timer ThreadInfo Event emitted.
         /// </summary>
-        public Func<TimerThreadInfoStatistics, Task> TimerThreadInfoCallback { get; set; }
+        public Func<ThreadInfoStatistics, Task> ThreadInfoTimerCallback { get; set; }
         /// <summary>
-        /// ThreadInfo dueTime/interval Options.
+        /// Callback invoke when Timer GCInfo Event emitted.
         /// </summary>
-        public (TimeSpan dueTime, TimeSpan intervalPeriod) TimerThreadInfoOption { get; set; } = (TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+        public Func<GCInfoStatistics, Task> GCInfoTimerCallback { get; set; }
+        /// <summary>
+        /// Timer dueTime/interval Options.
+        /// </summary>
+        public (TimeSpan dueTime, TimeSpan intervalPeriod) TimerOption { get; set; } = (TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
     }
 
     public class ProfilerTracker
@@ -48,10 +52,11 @@ namespace DiagnosticCore
         public ProfilerTracker() =>
             // list Stat
             profilerStats = new IProfilerStat[] {
-                new GCEventStat(Options?.GCProfilerCallback),
-                new ThreadPoolEventStat(Options?.ThreadProfilerCallback),
-                new ContentionEventStat(Options?.ContentionProfilerCallback),
-                new TimerThreadInfoStat(Options?.TimerThreadInfoCallback, Options.TimerThreadInfoOption)
+                new GCEventStat(Options?.GCEventProfilerCallback),
+                new ThreadPoolEventStat(Options?.ThreadPoolEventProfilerCallback),
+                new ContentionEventStat(Options?.ContentionEventProfilerCallback),
+                new ThreadInfoTimerStat(Options?.ThreadInfoTimerCallback, Options.TimerOption),
+                new GCInfoTimerStat(Options?.GCInfoTimerCallback, Options.TimerOption)
             };
 
         public void Start()

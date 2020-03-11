@@ -16,10 +16,10 @@ namespace DiagnosticCore.EventListeners
     /// </summary>
     public class ContentionEventListener : ProfileEventListenerBase, IChannelReader
     {
-        private readonly Channel<EtwContentionStatistics> _channel;
-        private readonly Func<EtwContentionStatistics, Task> _onEventEmit;
+        private readonly Channel<ContentionEventStatistics> _channel;
+        private readonly Func<ContentionEventStatistics, Task> _onEventEmit;
 
-        public ContentionEventListener(Func<EtwContentionStatistics, Task> onEventEmit) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.Contention)
+        public ContentionEventListener(Func<ContentionEventStatistics, Task> onEventEmit) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.Contention)
         {
             _onEventEmit = onEventEmit;
             var channelOption = new BoundedChannelOptions(50)
@@ -28,7 +28,7 @@ namespace DiagnosticCore.EventListeners
                 SingleWriter = true,
                 FullMode = BoundedChannelFullMode.DropOldest,
             };
-            _channel = Channel.CreateBounded<EtwContentionStatistics>(channelOption);
+            _channel = Channel.CreateBounded<ContentionEventStatistics>(channelOption);
         }
 
         public override void EventCreatedHandler(EventWrittenEventArgs eventData)
@@ -40,7 +40,7 @@ namespace DiagnosticCore.EventListeners
                 var durationNs = double.Parse(eventData.Payload[2].ToString());
 
                 // write to channel
-                _channel.Writer.TryWrite(new EtwContentionStatistics
+                _channel.Writer.TryWrite(new ContentionEventStatistics
                 {
                     Time = time,
                     Flag = flag,

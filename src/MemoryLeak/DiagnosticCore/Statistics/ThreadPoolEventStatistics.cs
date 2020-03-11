@@ -13,7 +13,7 @@ namespace DiagnosticCore.Statistics
     /// <summary>
     /// Data structure represent WorkerThreadPool statistics
     /// </summary>
-    public struct EtwThreadPoolStatistics
+    public struct ThreadPoolEventStatistics
     {
         public ThreadPoolStatisticType Type { get; set; }
         public ThreadWorkerStatistics ThreadWorker { get; set; }

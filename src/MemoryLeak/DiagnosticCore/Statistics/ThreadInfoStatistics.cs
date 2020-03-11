@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DiagnosticCore.Statistics
 {
-    public struct TimerThreadInfoStatistics
+    public struct ThreadInfoStatistics
     {
         public DateTime Date { get; set; }
         public int AvailableWorkerThreads { get; set; }

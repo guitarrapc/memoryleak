@@ -9,13 +9,13 @@ using DiagnosticCore.Statistics;
 namespace DiagnosticCore.EventListeners
 {
     /// <summary>
-    /// EventListener to collect Garbage Collection events. <see cref="EtwGCStatistics"/>.
+    /// EventListener to collect Garbage Collection events. <see cref="GCEventStatistics"/>.
     /// https://docs.microsoft.com/en-us/dotnet/framework/performance/garbage-collection-etw-events
     /// </summary>
     public class GCEventListener : ProfileEventListenerBase, IChannelReader
     {
-        private readonly Channel<EtwGCStatistics> _channel;
-        private readonly Func<EtwGCStatistics, Task> _onEventEmit;
+        private readonly Channel<GCEventStatistics> _channel;
+        private readonly Func<GCEventStatistics, Task> _onEventEmit;
         long timeGCStart = 0;
         uint reason = 0;
         uint type = 0;
@@ -25,7 +25,7 @@ namespace DiagnosticCore.EventListeners
         uint suspendReason = 0;
         uint suspendCount = 0;
 
-        public GCEventListener(Func<EtwGCStatistics, Task> onEventEmit) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.GC)
+        public GCEventListener(Func<GCEventStatistics, Task> onEventEmit) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.GC)
         {
             _onEventEmit = onEventEmit;
             var channelOption = new BoundedChannelOptions(50)
@@ -34,7 +34,7 @@ namespace DiagnosticCore.EventListeners
                 SingleWriter = true,
                 FullMode = BoundedChannelFullMode.DropOldest,
             };
-            _channel = Channel.CreateBounded<EtwGCStatistics>(channelOption);
+            _channel = Channel.CreateBounded<GCEventStatistics>(channelOption);
         }
 
         /// GC Flow
@@ -71,6 +71,7 @@ namespace DiagnosticCore.EventListeners
         {
             // GCStart & GCEnd = Actual GC
             // GCSuspendEEBegin && GCRestartEEEnd = GC Suspension + Pause (include GC Start-End)
+            // NOTE: HeapStat will retrieve in GCInfoTimerListener
             if (eventData.EventName.StartsWith("GCStart_", StringComparison.OrdinalIgnoreCase)) // GCStart_V1 / V2 ...
             {
                 timeGCStart = eventData.TimeStamp.Ticks;
@@ -85,7 +86,7 @@ namespace DiagnosticCore.EventListeners
                 var duration = (double)(timeGCEnd - timeGCStart) / 10.0 / 1000.0;
 
                 // write to channel
-                _channel.Writer.TryWrite(new EtwGCStatistics
+                _channel.Writer.TryWrite(new GCEventStatistics
                 {
                     Type = GCEventType.GCStartEnd,
                     GCStartEndStatistics = new GCStartEndStatistics
@@ -112,7 +113,7 @@ namespace DiagnosticCore.EventListeners
                 var duration = (double)(suspendEnd - suspendTimeGCStart) / 10.0 / 1000.0;
 
                 // write to channel
-                _channel.Writer.TryWrite(new EtwGCStatistics
+                _channel.Writer.TryWrite(new GCEventStatistics
                 {
                     Type = GCEventType.GCSuspend,
                     GCSuspendStatistics = new GCSuspendStatistics

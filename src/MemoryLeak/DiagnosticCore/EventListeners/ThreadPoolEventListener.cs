@@ -14,10 +14,10 @@ namespace DiagnosticCore.EventListeners
     /// <remarks>payload: https://docs.microsoft.com/en-us/dotnet/framework/performance/thread-pool-etw-events </remarks>
     public class ThreadPoolEventListener : ProfileEventListenerBase, IChannelReader
     {
-        private readonly Channel<EtwThreadPoolStatistics> _channel;
-        private readonly Func<EtwThreadPoolStatistics, Task> _onEventEmit;
+        private readonly Channel<ThreadPoolEventStatistics> _channel;
+        private readonly Func<ThreadPoolEventStatistics, Task> _onEventEmit;
 
-        public ThreadPoolEventListener(Func<EtwThreadPoolStatistics, Task> onEventEmit) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.Threading)
+        public ThreadPoolEventListener(Func<ThreadPoolEventStatistics, Task> onEventEmit) : base("Microsoft-Windows-DotNETRuntime", EventLevel.Informational, ClrRuntimeEventKeywords.Threading)
         {
             _onEventEmit = onEventEmit;
             var channelOption = new BoundedChannelOptions(50)
@@ -26,7 +26,7 @@ namespace DiagnosticCore.EventListeners
                 SingleWriter = true,
                 FullMode = BoundedChannelFullMode.DropOldest,
             };
-            _channel = Channel.CreateBounded<EtwThreadPoolStatistics>(channelOption);
+            _channel = Channel.CreateBounded<ThreadPoolEventStatistics>(channelOption);
         }
 
         public override void EventCreatedHandler(EventWrittenEventArgs eventData)
@@ -45,7 +45,7 @@ namespace DiagnosticCore.EventListeners
                 //var newWorkerThreadCount = uint.Parse(eventData.Payload[1].ToString());
                 var reason = uint.Parse(r);
                 // write to channel
-                _channel.Writer.TryWrite(new EtwThreadPoolStatistics
+                _channel.Writer.TryWrite(new ThreadPoolEventStatistics
                 {
                     Type = ThreadPoolStatisticType.ThreadAdjustment,
                     ThreadAdjustment = new ThreadAdjustmentStatistics
@@ -64,7 +64,7 @@ namespace DiagnosticCore.EventListeners
                 var retiredWrokerThreadCount = uint.Parse(eventData.Payload[1].ToString());
 
                 // write to channel
-                _channel.Writer.TryWrite(new EtwThreadPoolStatistics
+                _channel.Writer.TryWrite(new ThreadPoolEventStatistics
                 {
                     Type = ThreadPoolStatisticType.ThreadWorker,
                     ThreadWorker = new ThreadWorkerStatistics
@@ -82,7 +82,7 @@ namespace DiagnosticCore.EventListeners
                 long time = eventData.TimeStamp.Ticks;
                 var count = uint.Parse(eventData.Payload[0].ToString());
                 var retiredCount = uint.Parse(eventData.Payload[1].ToString());
-                _channel.Writer.TryWrite(new EtwThreadPoolStatistics
+                _channel.Writer.TryWrite(new ThreadPoolEventStatistics
                 {
                     Type = ThreadPoolStatisticType.IOThread,
                     IOThread = new IOThreadStatistics
