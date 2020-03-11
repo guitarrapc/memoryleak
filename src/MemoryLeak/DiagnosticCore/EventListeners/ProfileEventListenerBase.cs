@@ -82,6 +82,8 @@ namespace DiagnosticCore.EventListeners
         // Called whenever an EventSource is created.
         protected override void OnEventSourceCreated(EventSource eventSource)
         {
+            base.OnEventSourceCreated(eventSource);
+
             List<EventSource> tmp = _tmpEventSourceList;
             if (tmp != null)
             {
@@ -100,6 +102,7 @@ namespace DiagnosticCore.EventListeners
         // Called whenever an event is written.
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
         {
+            base.OnEventWritten(eventData);
             _eventWritten?.Invoke(eventData);
         }
 
