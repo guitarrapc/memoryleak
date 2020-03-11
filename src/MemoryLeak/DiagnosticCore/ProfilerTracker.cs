@@ -30,6 +30,11 @@ namespace DiagnosticCore
         /// </summary>
         public Func<GCInfoStatistics, Task> GCInfoTimerCallback { get; set; }
         /// <summary>
+        /// Callback invoke when Timer ProcessInfo Event emitted.
+        /// </summary>
+        public Func<ProcessInfoStatistics, Task> ProcessInfoTimerCallback { get; set; }
+
+        /// <summary>
         /// Timer dueTime/interval Options.
         /// </summary>
         public (TimeSpan dueTime, TimeSpan intervalPeriod) TimerOption { get; set; } = (TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
@@ -59,6 +64,7 @@ namespace DiagnosticCore
                 // timer
                 new ThreadInfoTimerProfiler(Options?.ThreadInfoTimerCallback, Options.TimerOption),
                 new GCInfoTimerProfiler(Options?.GCInfoTimerCallback, Options.TimerOption),
+                new ProcessInfoTimerProfiler(Options.ProcessInfoTimerCallback, Options.TimerOption),
             };
 
         public void Start()

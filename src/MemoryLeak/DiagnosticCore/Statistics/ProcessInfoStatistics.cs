@@ -1,0 +1,22 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace DiagnosticCore.Statistics
+{
+    public struct ProcessInfoStatistics
+    {
+        public DateTime Date { get; set; }
+        public double Cpu { get; set; }
+        /// <summary>
+        /// The working set includes both shared and private data. The shared data includes the pages that contain all the 
+        /// instructions that the process executes, including instructions in the process modules and the system libraries.
+        /// </summary>
+        public long WorkingSet { get; set; }
+        /// <summary>
+        /// The value returned by this property represents the current size of memory used by the process, in bytes, 
+        /// that cannot be shared with other processes.
+        /// </summary>
+        public long PrivateBytes { get; set; }
+    }
+}

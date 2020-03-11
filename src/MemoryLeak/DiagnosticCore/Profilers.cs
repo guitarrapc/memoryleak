@@ -175,4 +175,37 @@ namespace DiagnosticCore
             await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
         }
     }
+
+    public class ProcessInfoTimerProfiler : IProfiler
+    {
+        private readonly ProcessInfoTimerListener listener;
+
+        public ProcessInfoTimerProfiler(Func<ProcessInfoStatistics, Task> onEventEmit, (TimeSpan dueTime, TimeSpan interval) options)
+        {
+            listener = new ProcessInfoTimerListener(onEventEmit, options.dueTime, options.interval);
+        }
+
+        public void Restart()
+        {
+            listener.Restart();
+        }
+
+        public void Start()
+        {
+            listener.RunWithCallback(() => listener.EventCreatedHandler(), () =>
+            {
+                Console.WriteLine($"Start: {nameof(ProcessInfoTimerProfiler)}");
+            });
+        }
+
+        public void Stop()
+        {
+            listener.Stop();
+        }
+
+        public async Task ReadResultAsync(CancellationToken cancellationToken)
+        {
+            await listener.OnReadResultAsync(cancellationToken).ConfigureAwait(false);
+        }
+    }
 }

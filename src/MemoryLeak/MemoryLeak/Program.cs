@@ -45,6 +45,7 @@ namespace MemoryLeak
                 ContentionEventProfilerCallback = ContentionEventProfilerCallback,
                 ThreadInfoTimerCallback = ThreadInfoTimerCallback,
                 GCInfoTimerCallback = GCInfoTimerCallback,
+                ProcessInfoTimerCallback = ProcessInfoTimerCallback,
             };
             ProfilerTracker.Current.Value.Start();
         }
@@ -116,6 +117,17 @@ namespace MemoryLeak
         private static Task GCInfoTimerCallback(GCInfoStatistics arg)
         {
             Console.WriteLine($"GCInfo HeapSize {arg.HeapSize}; Gen0Count {arg.Gen0Count}; Gen1Count {arg.Gen1Count}; Gen2Count {arg.Gen2Count}; Gen0Size {arg.Gen0Size}; Gen1Size {arg.Gen1Size}; Gen2Size {arg.Gen2Size}; LohSize {arg.LohSize}; TimeInGc {arg.TimeInGc}");
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// ProcessInfo
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        private static Task ProcessInfoTimerCallback(ProcessInfoStatistics arg)
+        {
+            Console.WriteLine($"ProcessInfo Cpu {arg.Cpu}; PrivateBytes {arg.PrivateBytes}; WorkingSet {arg.WorkingSet};");
             return Task.CompletedTask;
         }
     }
