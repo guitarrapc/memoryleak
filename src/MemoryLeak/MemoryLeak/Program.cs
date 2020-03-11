@@ -76,17 +76,12 @@ namespace MemoryLeak
         {
             if (arg.Type == ThreadPoolStatisticType.ThreadWorker)
             {
-                Console.WriteLine($"Thread ActiveWrokerThreads {arg.ThreadWorker.ActiveWrokerThreads}; RetiredWrokerThreads {arg.ThreadWorker.RetiredWrokerThreads};");
+                Console.WriteLine($"Thread ActiveWrokerThreads {arg.ThreadWorker.ActiveWrokerThreads};");
             }
             else if (arg.Type == ThreadPoolStatisticType.ThreadAdjustment)
             {
-                Console.WriteLine($"ThreadAdjustment Reason {arg.ThreadAdjustment.Reason}; AverageThrouput {arg.ThreadAdjustment.AverageThrouput};");
+                Console.WriteLine($"ThreadAdjustment Reason {arg.ThreadAdjustment.Reason}; NewWorkerThread {arg.ThreadAdjustment.NewWorkerThreads}; AverageThrouput {arg.ThreadAdjustment.AverageThrouput};");
             }
-            else if (arg.Type == ThreadPoolStatisticType.IOThread)
-            {
-                Console.WriteLine($"IOThreads {arg.IOThread.Count}; RetiredIOThreads {arg.IOThread.RetiredIOThreads};");
-            }
-
             return Task.CompletedTask;
         }
 
@@ -108,7 +103,8 @@ namespace MemoryLeak
         /// <returns></returns>
         private static Task ThreadInfoTimerCallback(ThreadInfoStatistics arg)
         {
-            Console.WriteLine($"ThreadInfo AvailableWorkerThreads {arg.AvailableWorkerThreads}; MaxWorkerThreads {arg.MaxWorkerThreads};");
+            var usingWorkerThreads = arg.MaxWorkerThreads - arg.AvailableWorkerThreads;
+            Console.WriteLine($"ThreadInfo AvailableWorkerThreads {arg.AvailableWorkerThreads}; MaxWorkerThreads {arg.MaxWorkerThreads}; UsingWorkerThreads {usingWorkerThreads}; ThreadCount {arg.ThreadCount}; QueueLength {arg.QueueLength}; LockContentionCount {arg.LockContentionCount}; CompletedItemsCount {arg.CompletedItemsCount}; AvailableCompletionPortThreads {arg.AvailableCompletionPortThreads}");
             return Task.CompletedTask;
         }
 

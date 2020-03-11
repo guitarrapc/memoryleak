@@ -42,7 +42,8 @@ namespace MemoryLeak.Controllers
         private static double _cpu = 0, _rps = 0;
         private static readonly double RefreshRate = TimeSpan.FromSeconds(1).TotalMilliseconds;
         public static long Requests = 0;
-
+        
+        // GC api
         [HttpGet("collect")]
         public ActionResult GetCollect()
         {
@@ -73,30 +74,6 @@ namespace MemoryLeak.Controllers
             });
         }
 
-        [HttpGet("startdumptracker")]
-        public ActionResult StartDumpTracker()
-        {
-            ProfilerTracker.Current.Value.Restart();
-            return Ok();
-        }
-        [HttpGet("stopdumptracker")]
-        public ActionResult StopDumpTracker()
-        {
-            ProfilerTracker.Current.Value.Stop();
-            return Ok();
-        }
-
-        [HttpGet("thread/{count}")]
-        public async Task<ActionResult> StartThread(int count = 100_000)
-        {
-            // start Threads in threadpool
-            var tasks = Enumerable.Range(1, count)
-                        .Select(x => Task.Run(() => 1))
-                        .ToArray();
-            await Task.WhenAll(tasks); 
-            return Ok();
-        }
-
         [HttpGet("final")]
         public ActionResult GetFinal()
         {
@@ -105,6 +82,74 @@ namespace MemoryLeak.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Start Tracker to profile diagnostics
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("startdumptracker")]
+        public ActionResult StartDumpTracker()
+        {
+            ProfilerTracker.Current.Value.Restart();
+            return Ok("started");
+        }
+        /// <summary>
+        /// Stop Tracker to profile diagnostics
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("stopdumptracker")]
+        public ActionResult StopDumpTracker()
+        {
+            ProfilerTracker.Current.Value.Stop();
+            return Ok("stopped");
+        }
+
+        /// <summary>
+        /// increate count but could not cause Thread starvation.
+        /// </summary>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        [HttpGet("thread/{count}")]
+        public async Task<ActionResult> StartThread(int count = 100_000)
+        {
+            // start Threads in threadpool
+            var tasks = Enumerable.Range(1, count)
+                        .Select(x => Task.Run(() => 1))
+                        .ToArray();
+            await Task.WhenAll(tasks);
+            return Ok(count);
+        }
+
+        /// <summary>
+        /// Increase count to make thread starvation.
+        /// </summary>
+        private static object _lock = new Object();
+        [HttpGet("contention/{count}")]
+        public async Task<ActionResult> Contention(int count = 10)
+        {
+            var _workers = new Task[count];
+            for (int i = 0; i < count; i++)
+            {
+                _workers[i] = Task.Run(async () =>
+                {
+                    var count = 0;
+                    while (true)
+                    {
+                        lock (_lock)
+                        {
+                            Thread.Sleep(200);
+                            count++;
+                            if (count > 3)
+                                break;
+                        }
+                    }
+                });
+            }
+            await Task.WhenAll(_workers);
+
+            return Ok(count);
+        }
+
+        // diagnostics
         [HttpGet("diagnostics")]
         public ActionResult<CounterMetrics> GetDiagnostics()
         {

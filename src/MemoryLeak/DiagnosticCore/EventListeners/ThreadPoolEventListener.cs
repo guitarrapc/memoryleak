@@ -31,8 +31,10 @@ namespace DiagnosticCore.EventListeners
 
         public override void EventCreatedHandler(EventWrittenEventArgs eventData)
         {
-            // ThreadPoolWorkerThreadAdjustmentAdjustment : ThreadPool starvation on Reason 7
+            // ThreadPoolWorkerThreadAdjustmentAdjustment : ThreadPool starvation on Reason 6
+            // IOThreadXxxx_ : Windows only.
             if (eventData.EventName.Equals("ThreadPoolWorkerThreadWait", StringComparison.OrdinalIgnoreCase)) return;
+
             if (eventData.EventName.Equals("ThreadPoolWorkerThreadAdjustmentAdjustment", StringComparison.OrdinalIgnoreCase))
             {
                 // do not track on "climing up" reason.
@@ -41,9 +43,9 @@ namespace DiagnosticCore.EventListeners
 
                 long time = eventData.TimeStamp.Ticks;
                 var averageThroughput = double.Parse(eventData.Payload[0].ToString());
-                // non consistence value returns. ignore it.
-                //var newWorkerThreadCount = uint.Parse(eventData.Payload[1].ToString());
+                var newWorkerThreadCount = uint.Parse(eventData.Payload[1].ToString());
                 var reason = uint.Parse(r);
+
                 // write to channel
                 _channel.Writer.TryWrite(new ThreadPoolEventStatistics
                 {
@@ -51,6 +53,7 @@ namespace DiagnosticCore.EventListeners
                     ThreadAdjustment = new ThreadAdjustmentStatistics
                     {
                         Time = time,
+                        NewWorkerThreads = newWorkerThreadCount,
                         AverageThrouput = averageThroughput,
                         Reason = reason,
                     },
@@ -61,7 +64,8 @@ namespace DiagnosticCore.EventListeners
             {
                 long time = eventData.TimeStamp.Ticks;
                 var activeWrokerThreadCount = uint.Parse(eventData.Payload[0].ToString());
-                var retiredWrokerThreadCount = uint.Parse(eventData.Payload[1].ToString());
+                // always 0
+                // var retiredWrokerThreadCount = uint.Parse(eventData.Payload[1].ToString());
 
                 // write to channel
                 _channel.Writer.TryWrite(new ThreadPoolEventStatistics
@@ -71,25 +75,6 @@ namespace DiagnosticCore.EventListeners
                     {
                         Time = time,
                         ActiveWrokerThreads = activeWrokerThreadCount,
-                        RetiredWrokerThreads = retiredWrokerThreadCount,
-                    },
-                });
-            }
-            else if (eventData.EventName.StartsWith("IOThreadCreate_", StringComparison.OrdinalIgnoreCase) 
-                || eventData.EventName.StartsWith("IOThreadTerminate_", StringComparison.OrdinalIgnoreCase) 
-                || eventData.EventName.StartsWith("IOThreadRetire)_", StringComparison.OrdinalIgnoreCase))
-            {
-                long time = eventData.TimeStamp.Ticks;
-                var count = uint.Parse(eventData.Payload[0].ToString());
-                var retiredCount = uint.Parse(eventData.Payload[1].ToString());
-                _channel.Writer.TryWrite(new ThreadPoolEventStatistics
-                {
-                    Type = ThreadPoolStatisticType.IOThread,
-                    IOThread = new IOThreadStatistics
-                    {
-                        Time = time,
-                        Count = count,
-                        RetiredIOThreads = retiredCount,
                     },
                 });
             }
