@@ -70,7 +70,6 @@ namespace DiagnosticCore.Oop.EventPipeEventSources
         {
             if (evt.EventName.Equals("EventCounters"))
             {
-                // todo: get type to avoid boxing.
                 IDictionary<string, object> payloadVal = (IDictionary<string, object>)(evt.PayloadValue(0));
                 IDictionary<string, object> payloadFields = (IDictionary<string, object>)(payloadVal["Payload"]);
                 if (payloadFields["Name"].ToString().Equals("cpu-usage"))

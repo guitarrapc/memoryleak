@@ -165,17 +165,17 @@ namespace MemoryLeak.Controllers
             return Ok(count);
         }
 
+        private static readonly object _lock = new Object();
         /// <summary>
         /// Increase count to make thread starvation.
         /// </summary>
-        private static object _lock = new Object();
         [HttpGet("contention/{count}")]
         public async Task<ActionResult> Contention(int count = 10)
         {
             var _workers = new Task[count];
             for (int i = 0; i < count; i++)
             {
-                _workers[i] = Task.Run(async () =>
+                _workers[i] = Task.Run(() =>
                 {
                     var count = 0;
                     while (true)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace DiagnosticCore.Statistics
@@ -14,14 +15,42 @@ namespace DiagnosticCore.Statistics
     /// <summary>
     /// Data structure represent GC statistics
     /// </summary>
-    public struct GCEventStatistics
+    public struct GCEventStatistics : IEquatable<GCEventStatistics>
     {
         public GCEventType Type { get; set; }
         public GCStartEndStatistics GCStartEndStatistics { get; set; }
         public GCSuspendStatistics GCSuspendStatistics { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            return obj is GCEventStatistics other
+                && Equals(other);
+        }
+
+        public bool Equals([AllowNull] GCEventStatistics other)
+        {
+            return Type == other.Type
+                && GCStartEndStatistics.Equals(other.GCStartEndStatistics)
+                && GCSuspendStatistics.Equals(other.GCSuspendStatistics);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Type, GCStartEndStatistics, GCSuspendStatistics);
+        }
+
+        public static bool operator ==(GCEventStatistics left, GCEventStatistics right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(GCEventStatistics left, GCEventStatistics right)
+        {
+            return !(left == right);
+        }
     }
 
-    public struct GCStartEndStatistics
+    public struct GCStartEndStatistics : IEquatable<GCStartEndStatistics>
     {
         public uint Index { get; set; }
         /// <summary>
@@ -64,9 +93,41 @@ namespace DiagnosticCore.Statistics
                 _ => throw new ArgumentOutOfRangeException("reason not defined."),
             };
         }
+
+        public override bool Equals(object obj)
+        {
+            return obj is GCStartEndStatistics other
+                && Equals(other);
+        }
+
+        public bool Equals([AllowNull] GCStartEndStatistics other)
+        {
+            return Index == other.Index &&
+                Type == other.Type &&
+                Generation == other.Generation &&
+                Reason == other.Reason &&
+                DurationMillsec == other.DurationMillsec &&
+                GCStartTime == other.GCStartTime &&
+                GCEndTime == other.GCEndTime;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Index, Type, Generation, Reason, DurationMillsec, GCStartTime, GCEndTime);
+        }
+
+        public static bool operator ==(GCStartEndStatistics left, GCStartEndStatistics right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(GCStartEndStatistics left, GCStartEndStatistics right)
+        {
+            return !(left == right);
+        }
     }
 
-    public struct GCSuspendStatistics
+    public struct GCSuspendStatistics : IEquatable<GCSuspendStatistics>
     {
         public double DurationMillisec { get; set; }
         /// <summary>
@@ -94,6 +155,33 @@ namespace DiagnosticCore.Statistics
                 6 => "Preparation for garbage collection",
                 _ => throw new ArgumentOutOfRangeException("reason not defined."),
             };
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(DurationMillisec, Reason, Count);
+        }
+
+        public bool Equals([AllowNull] GCSuspendStatistics other)
+        {
+            return DurationMillisec == other.DurationMillisec &&
+                   Reason == other.Reason &&
+                   Count == other.Count;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is GCSuspendStatistics statistics && Equals(statistics);
+        }
+
+        public static bool operator ==(GCSuspendStatistics left, GCSuspendStatistics right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(GCSuspendStatistics left, GCSuspendStatistics right)
+        {
+            return !(left == right);
         }
     }
 }
