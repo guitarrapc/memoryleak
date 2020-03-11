@@ -81,7 +81,10 @@ namespace DiagnosticCore.TimerListeners
             {
                 while (Enabled && _channel.Reader.TryRead(out var value))
                 {
-                    await _onEventEmit?.Invoke(value);
+                    if (_onEventEmit != null)
+                    {
+                        await _onEventEmit.Invoke(value);
+                    }
                 }
             }
         }
