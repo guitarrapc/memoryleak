@@ -22,15 +22,15 @@ MemoryLeak
 run bench.
 
 ```shell
-./bombardier.exe -c 125 -n 10000000 http://localhost:5000
-./bombardier.exe -c 125 -n 10000000 http://localhost:5000/api/staticstring
-./bombardier.exe -c 125 -n 10000000 http://localhost:5000/api/bigstring
-./bombardier.exe -c 125 -n 10000000 http://localhost:5000/api/bigintarray
-./bombardier.exe -c 125 -n 10000000 http://localhost:5000/api/loh/300000
-./bombardier.exe -c 125 -n 10000000 http://localhost:5000/api/fileprovider
-./bombardier.exe -c 125 -n 10000000 http://localhost:5000/api/array/10000
-./bombardier.exe -c 125 -n 10000000 http://localhost:5000/api/httpclient1?url=https://google.com
-./bombardier.exe -c 125 -n 10000000 http://localhost:5000/api/httpclient2?url=https://google.com
+bombardier -c 125 -n 10000000 http://localhost:5000
+bombardier -c 125 -n 10000000 http://localhost:5000/api/staticstring
+bombardier -c 125 -n 10000000 http://localhost:5000/api/bigstring
+bombardier -c 125 -n 10000000 http://localhost:5000/api/bigintarray
+bombardier -c 125 -n 10000000 http://localhost:5000/api/loh
+bombardier -c 125 -n 10000000 http://localhost:5000/api/fileprovider
+bombardier -c 125 -n 10000000 http://localhost:5000/api/array/10000
+bombardier -c 125 -n 10000000 http://localhost:5000/api/httpclient1?url=https://google.com
+bombardier -c 125 -n 10000000 http://localhost:5000/api/httpclient2?url=https://google.com
 ```
 
 Diag
