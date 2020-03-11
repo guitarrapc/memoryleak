@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace DiagnosticCore.Statistics
 {
-    public struct ProcessInfoStatistics
+    public struct ProcessInfoStatistics : IEquatable<ProcessInfoStatistics>
     {
         public DateTime Date { get; set; }
         public double Cpu { get; set; }
@@ -18,5 +19,33 @@ namespace DiagnosticCore.Statistics
         /// that cannot be shared with other processes.
         /// </summary>
         public long PrivateBytes { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ProcessInfoStatistics statistics && Equals(statistics);
+        }
+
+        public bool Equals([AllowNull] ProcessInfoStatistics other)
+        {
+            return Date == other.Date &&
+                   Cpu == other.Cpu &&
+                   WorkingSet == other.WorkingSet &&
+                   PrivateBytes == other.PrivateBytes;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Date, Cpu, WorkingSet, PrivateBytes);
+        }
+
+        public static bool operator ==(ProcessInfoStatistics left, ProcessInfoStatistics right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ProcessInfoStatistics left, ProcessInfoStatistics right)
+        {
+            return !(left == right);
+        }
     }
 }

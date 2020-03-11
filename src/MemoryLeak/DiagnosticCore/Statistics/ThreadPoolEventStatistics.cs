@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace DiagnosticCore.Statistics
@@ -12,14 +13,41 @@ namespace DiagnosticCore.Statistics
     /// <summary>
     /// Data structure represent WorkerThreadPool statistics
     /// </summary>
-    public struct ThreadPoolEventStatistics
+    public struct ThreadPoolEventStatistics : IEquatable<ThreadPoolEventStatistics>
     {
         public ThreadPoolStatisticType Type { get; set; }
         public ThreadWorkerStatistics ThreadWorker { get; set; }
         public ThreadAdjustmentStatistics ThreadAdjustment { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ThreadPoolEventStatistics statistics && Equals(statistics);
+        }
+
+        public bool Equals([AllowNull] ThreadPoolEventStatistics other)
+        {
+            return Type == other.Type &&
+                   ThreadWorker.Equals(other.ThreadWorker) &&
+                   ThreadAdjustment.Equals(other.ThreadAdjustment);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Type, ThreadWorker, ThreadAdjustment);
+        }
+
+        public static bool operator ==(ThreadPoolEventStatistics left, ThreadPoolEventStatistics right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ThreadPoolEventStatistics left, ThreadPoolEventStatistics right)
+        {
+            return !(left == right);
+        }
     }
 
-    public struct ThreadWorkerStatistics
+    public struct ThreadWorkerStatistics : IEquatable<ThreadWorkerStatistics>
     {
         public long Time { get; set; }
         /// <summary>
@@ -31,14 +59,39 @@ namespace DiagnosticCore.Statistics
         /// Always 0 on ThreadPoolWorkerThreadStart and ThreadPoolWorkerThreadStop
         /// </summary>
         //public uint RetiredWrokerThreads { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ThreadWorkerStatistics statistics && Equals(statistics);
+        }
+
+        public bool Equals([AllowNull] ThreadWorkerStatistics other)
+        {
+            return Time == other.Time &&
+                   ActiveWrokerThreads == other.ActiveWrokerThreads;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Time, ActiveWrokerThreads);
+        }
+
+        public static bool operator ==(ThreadWorkerStatistics left, ThreadWorkerStatistics right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ThreadWorkerStatistics left, ThreadWorkerStatistics right)
+        {
+            return !(left == right);
+        }
     }
 
-    public struct ThreadAdjustmentStatistics
+    public struct ThreadAdjustmentStatistics : IEquatable<ThreadAdjustmentStatistics>
     {
         public long Time { get; set; }
         public double AverageThrouput { get; set; }
         public uint NewWorkerThreads { get; set; }
-
         /// <summary>
         /// 0x00 - Warmup.
         /// 0x01 - Initializing.
@@ -69,6 +122,34 @@ namespace DiagnosticCore.Statistics
                 7 => "Thread timed out",
                 _ => throw new ArgumentOutOfRangeException("reason not defined."),
             };
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ThreadAdjustmentStatistics statistics && Equals(statistics);
+        }
+
+        public bool Equals([AllowNull] ThreadAdjustmentStatistics other)
+        {
+            return Time == other.Time &&
+                   AverageThrouput == other.AverageThrouput &&
+                   NewWorkerThreads == other.NewWorkerThreads &&
+                   Reason == other.Reason;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Time, AverageThrouput, NewWorkerThreads, Reason);
+        }
+
+        public static bool operator ==(ThreadAdjustmentStatistics left, ThreadAdjustmentStatistics right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ThreadAdjustmentStatistics left, ThreadAdjustmentStatistics right)
+        {
+            return !(left == right);
         }
     }
 }

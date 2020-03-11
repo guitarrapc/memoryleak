@@ -15,18 +15,17 @@ namespace DiagnosticCore.Statistics
         public byte Flag { get; set; }
         public double DurationNs { get; set; }
 
+        public override bool Equals(object obj)
+        {
+            return obj is ContentionEventStatistics other
+                && Equals(other);
+        }
 
         public bool Equals([AllowNull] ContentionEventStatistics other)
         {
-            return Time == other.Time 
-                && Flag == other.Flag 
+            return Time == other.Time
+                && Flag == other.Flag
                 && DurationNs == other.DurationNs;
-        }
-        public override bool Equals(object obj)
-        {
-            if (obj is ContentionEventStatistics other)
-                return Equals(other);
-            return false;
         }
 
         public override int GetHashCode()
