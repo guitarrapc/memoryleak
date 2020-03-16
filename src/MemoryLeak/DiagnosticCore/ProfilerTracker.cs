@@ -15,6 +15,10 @@ namespace DiagnosticCore
         /// </summary>
         public CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
         /// <summary>
+        /// Callback invoke when Contention Event emitted (generally lock event) and error.
+        /// </summary>
+        public (Func<ContentionEventStatistics, Task> OnSuccess, Action<Exception> OnError) ContentionEventCallback { get; set; }
+        /// <summary>
         /// Callback invoke when GC Event emitted and error.
         /// </summary>
         public (Func<GCEventStatistics, Task> OnSuccess, Action<Exception> OnError) GCEventCallback { get; set; }
@@ -23,14 +27,6 @@ namespace DiagnosticCore
         /// </summary>
         public (Func<ThreadPoolEventStatistics, Task> OnSuccess, Action<Exception> OnError) ThreadPoolEventCallback { get; set; }
         /// <summary>
-        /// Callback invoke when Contention Event emitted (generally lock event) and error.
-        /// </summary>
-        public (Func<ContentionEventStatistics, Task> OnSuccess, Action<Exception> OnError) ContentionEventCallback { get; set; }
-        /// <summary>
-        /// Callback invoke when Timer ThreadInfo Event emitted and error.
-        /// </summary>
-        public (Func<ThreadInfoStatistics, Task> OnSuccess, Action<Exception> OnError) ThreadInfoTimerCallback { get; set; }
-        /// <summary>
         /// Callback invoke when Timer GCInfo Event emitted and error.
         /// </summary>
         public (Func<GCInfoStatistics, Task> OnSuccess, Action<Exception> OnError) GCInfoTimerCallback { get; set; }
@@ -38,6 +34,10 @@ namespace DiagnosticCore
         /// Callback invoke when Timer ProcessInfo Event emitted and error.
         /// </summary>
         public (Func<ProcessInfoStatistics, Task> OnSuccess, Action<Exception> OnError) ProcessInfoTimerCallback { get; set; }
+        /// <summary>
+        /// Callback invoke when Timer ThreadInfo Event emitted and error.
+        /// </summary>
+        public (Func<ThreadInfoStatistics, Task> OnSuccess, Action<Exception> OnError) ThreadInfoTimerCallback { get; set; }
 
         /// <summary>
         /// Timer dueTime/interval Options.

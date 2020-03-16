@@ -15,7 +15,10 @@ namespace MemoryLeak
         {
             _logger = loggerFactory.CreateLogger<Diagnostics>();
 
-            EnableDatadog();
+            // Enable Datadog before tracker.
+            DatadogTracing.EnableDatadog();
+
+            // Enable Inprocess Tracker
             EnableTracker();
         }
 
@@ -24,28 +27,13 @@ namespace MemoryLeak
             // InProcess tracker
             ProfilerTracker.Options = new ProfilerTrackerOptions
             {
+                ContentionEventCallback = (ContentionEventProfilerCallback, OnException),
                 GCEventCallback = (GCEventProfilerCallback, OnException),
                 ThreadPoolEventCallback = (ThreadPoolEventProfilerCallback, OnException),
-                ContentionEventCallback = (ContentionEventProfilerCallback, OnException),
-                ThreadInfoTimerCallback = (ThreadInfoTimerCallback, OnException),
                 GCInfoTimerCallback = (GCInfoTimerCallback, OnException),
                 ProcessInfoTimerCallback = (ProcessInfoTimerCallback, OnException),
+                ThreadInfoTimerCallback = (ThreadInfoTimerCallback, OnException),
             };
-        }
-        private void EnableDatadog()
-        {
-            var dogstatsdConfig = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? new StatsdConfig
-                {
-                    StatsdServerName = "127.0.0.1", // udp for Windows Host
-                    StatsdPort = 8172,
-                }
-                : new StatsdConfig
-                {
-                    StatsdServerName = "unix:///tmp/dsd.socket", // unix domain socket only work on Linux (Windows missing SocketType.Dgram)
-                };
-            DogStatsd.Configure(dogstatsdConfig);
-
         }
         public void StartTracker()
         {
@@ -58,6 +46,19 @@ namespace MemoryLeak
         private void OnException(Exception exception) => _logger.LogError(exception, "Error while diagnostics.");
 
         /// <summary>
+        /// Contention Event
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        private Task ContentionEventProfilerCallback(ContentionEventStatistics arg)
+        {
+            // memo: send metrics to datadog or any favor you like.
+            DatadogTracing.ContentionEventStartEnd(arg);
+            _logger.LogInformation($"Contention Flag {arg.Flag}; DurationNs {arg.DurationNs}");
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
         /// GC Event
         /// </summary>
         /// <param name="arg"></param>
@@ -67,10 +68,12 @@ namespace MemoryLeak
             // memo: send metrics to datadog or any favor you like.
             if (arg.Type == GCEventType.GCStartEnd)
             {
+                DatadogTracing.GcEventStartEnd(arg.GCStartEndStatistics);
                 _logger.LogInformation($"GC StartEnd Reason {arg.GCStartEndStatistics.Reason}; Duration {arg.GCStartEndStatistics.DurationMillsec}ms; Index {arg.GCStartEndStatistics.Index}; Gen {arg.GCStartEndStatistics.Generation}; Type {arg.GCStartEndStatistics.Type};");
             }
             else if (arg.Type == GCEventType.GCSuspend)
             {
+                DatadogTracing.GcEventSuspend(arg.GCSuspendStatistics);
                 _logger.LogInformation($"GC Suspend Reason {arg.GCSuspendStatistics.Reason}; Duration {arg.GCSuspendStatistics.DurationMillisec}ms; Count {arg.GCSuspendStatistics.Count};");
             }
             return Task.CompletedTask;
@@ -84,39 +87,16 @@ namespace MemoryLeak
         private Task ThreadPoolEventProfilerCallback(ThreadPoolEventStatistics arg)
         {
             // memo: send metrics to datadog or any favor you like.
-            if (arg.Type == ThreadPoolStatisticType.ThreadWorker)
+            if (arg.Type == ThreadPoolStatisticType.ThreadPoolWorkerStartStop)
             {
-                _logger.LogInformation($"Thread ActiveWrokerThreads {arg.ThreadWorker.ActiveWrokerThreads};");
+                DatadogTracing.ThreadPoolEventWorker(arg.ThreadPoolWorker);
+                _logger.LogInformation($"ThreadPoolStartStop ActiveWrokerThreads {arg.ThreadPoolWorker.ActiveWrokerThreads};");
             }
-            else if (arg.Type == ThreadPoolStatisticType.ThreadAdjustment)
+            else if (arg.Type == ThreadPoolStatisticType.ThreadPoolAdjustment)
             {
-                _logger.LogInformation($"ThreadAdjustment Reason {arg.ThreadAdjustment.Reason}; NewWorkerThread {arg.ThreadAdjustment.NewWorkerThreads}; AverageThrouput {arg.ThreadAdjustment.AverageThrouput};");
+                DatadogTracing.ThreadPoolEventAdjustment(arg.ThreadPoolAdjustment);
+                _logger.LogInformation($"ThreadAdjustment Reason {arg.ThreadPoolAdjustment.Reason}; NewWorkerThread {arg.ThreadPoolAdjustment.NewWorkerThreads}; AverageThrouput {arg.ThreadPoolAdjustment.AverageThrouput};");
             }
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Contention Event
-        /// </summary>
-        /// <param name="arg"></param>
-        /// <returns></returns>
-        private Task ContentionEventProfilerCallback(ContentionEventStatistics arg)
-        {
-            // memo: send metrics to datadog or any favor you like.
-            _logger.LogInformation($"Contention Flag {arg.Flag}; DurationNs {arg.DurationNs}");
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// ThreadInfo
-        /// </summary>
-        /// <param name="arg"></param>
-        /// <returns></returns>
-        private Task ThreadInfoTimerCallback(ThreadInfoStatistics arg)
-        {
-            // memo: send metrics to datadog or any favor you like.
-            var usingWorkerThreads = arg.MaxWorkerThreads - arg.AvailableWorkerThreads;
-            _logger.LogInformation($"ThreadInfo AvailableWorkerThreads {arg.AvailableWorkerThreads}; MaxWorkerThreads {arg.MaxWorkerThreads}; UsingWorkerThreads {usingWorkerThreads}; ThreadCount {arg.ThreadCount}; QueueLength {arg.QueueLength}; LockContentionCount {arg.LockContentionCount}; CompletedItemsCount {arg.CompletedItemsCount}; AvailableCompletionPortThreads {arg.AvailableCompletionPortThreads}");
             return Task.CompletedTask;
         }
 
@@ -128,6 +108,7 @@ namespace MemoryLeak
         private Task GCInfoTimerCallback(GCInfoStatistics arg)
         {
             // memo: send metrics to datadog or any favor you like.
+            DatadogTracing.GcInfoTimerGauge(arg);
             _logger.LogInformation($"GCInfo HeapSize {arg.HeapSize}; Gen0Count {arg.Gen0Count}; Gen1Count {arg.Gen1Count}; Gen2Count {arg.Gen2Count}; Gen0Size {arg.Gen0Size}; Gen1Size {arg.Gen1Size}; Gen2Size {arg.Gen2Size}; LohSize {arg.LohSize}; TimeInGc {arg.TimeInGc}");
             return Task.CompletedTask;
         }
@@ -140,7 +121,22 @@ namespace MemoryLeak
         private Task ProcessInfoTimerCallback(ProcessInfoStatistics arg)
         {
             // memo: send metrics to datadog or any favor you like.
+            DatadogTracing.ProcessInfoTimerGauge(arg);
             _logger.LogInformation($"ProcessInfo Cpu {arg.Cpu}; PrivateBytes {arg.PrivateBytes}; WorkingSet {arg.WorkingSet};");
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// ThreadInfo
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        private Task ThreadInfoTimerCallback(ThreadInfoStatistics arg)
+        {
+            // memo: send metrics to datadog or any favor you like.
+            DatadogTracing.ThreadInfoTimerGauge(arg);
+            var usingWorkerThreads = arg.MaxWorkerThreads - arg.AvailableWorkerThreads;
+            _logger.LogInformation($"ThreadInfo AvailableWorkerThreads {arg.AvailableWorkerThreads}; MaxWorkerThreads {arg.MaxWorkerThreads}; UsingWorkerThreads {usingWorkerThreads}; ThreadCount {arg.ThreadCount}; QueueLength {arg.QueueLength}; LockContentionCount {arg.LockContentionCount}; CompletedItemsCount {arg.CompletedItemsCount}; AvailableCompletionPortThreads {arg.AvailableCompletionPortThreads}");
             return Task.CompletedTask;
         }
     }

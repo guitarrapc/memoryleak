@@ -12,10 +12,25 @@ namespace DiagnosticCore.Statistics
         public int Gen0Count { get; set; }
         public int Gen1Count { get; set; }
         public int Gen2Count { get; set; }
+        /// <summary>
+        /// Percent
+        /// </summary>
         public int TimeInGc { get; set; }
+        /// <summary>
+        /// bytes
+        /// </summary>
         public ulong Gen0Size { get; set; }
+        /// <summary>
+        /// bytes
+        /// </summary>
         public ulong Gen1Size { get; set; }
+        /// <summary>
+        /// bytes
+        /// </summary>
         public ulong Gen2Size { get; set; }
+        /// <summary>
+        /// bytes
+        /// </summary>
         public ulong LohSize { get; set; }
 
         public override bool Equals(object obj)

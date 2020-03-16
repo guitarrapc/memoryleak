@@ -7,8 +7,8 @@ namespace DiagnosticCore.Statistics
 {
     public enum ThreadPoolStatisticType
     {
-        ThreadWorker,
-        ThreadAdjustment,
+        ThreadPoolWorkerStartStop,
+        ThreadPoolAdjustment,
     }
     /// <summary>
     /// Data structure represent WorkerThreadPool statistics
@@ -16,8 +16,8 @@ namespace DiagnosticCore.Statistics
     public struct ThreadPoolEventStatistics : IEquatable<ThreadPoolEventStatistics>
     {
         public ThreadPoolStatisticType Type { get; set; }
-        public ThreadWorkerStatistics ThreadWorker { get; set; }
-        public ThreadAdjustmentStatistics ThreadAdjustment { get; set; }
+        public ThreadPoolWorkerStatistics ThreadPoolWorker { get; set; }
+        public ThreadPoolAdjustmentStatistics ThreadPoolAdjustment { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -27,13 +27,13 @@ namespace DiagnosticCore.Statistics
         public bool Equals([AllowNull] ThreadPoolEventStatistics other)
         {
             return Type == other.Type &&
-                   ThreadWorker.Equals(other.ThreadWorker) &&
-                   ThreadAdjustment.Equals(other.ThreadAdjustment);
+                   ThreadPoolWorker.Equals(other.ThreadPoolWorker) &&
+                   ThreadPoolAdjustment.Equals(other.ThreadPoolAdjustment);
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Type, ThreadWorker, ThreadAdjustment);
+            return HashCode.Combine(Type, ThreadPoolWorker, ThreadPoolAdjustment);
         }
 
         public static bool operator ==(ThreadPoolEventStatistics left, ThreadPoolEventStatistics right)
@@ -47,7 +47,7 @@ namespace DiagnosticCore.Statistics
         }
     }
 
-    public struct ThreadWorkerStatistics : IEquatable<ThreadWorkerStatistics>
+    public struct ThreadPoolWorkerStatistics : IEquatable<ThreadPoolWorkerStatistics>
     {
         public long Time { get; set; }
         /// <summary>
@@ -62,10 +62,10 @@ namespace DiagnosticCore.Statistics
 
         public override bool Equals(object obj)
         {
-            return obj is ThreadWorkerStatistics statistics && Equals(statistics);
+            return obj is ThreadPoolWorkerStatistics statistics && Equals(statistics);
         }
 
-        public bool Equals([AllowNull] ThreadWorkerStatistics other)
+        public bool Equals([AllowNull] ThreadPoolWorkerStatistics other)
         {
             return Time == other.Time &&
                    ActiveWrokerThreads == other.ActiveWrokerThreads;
@@ -76,18 +76,18 @@ namespace DiagnosticCore.Statistics
             return HashCode.Combine(Time, ActiveWrokerThreads);
         }
 
-        public static bool operator ==(ThreadWorkerStatistics left, ThreadWorkerStatistics right)
+        public static bool operator ==(ThreadPoolWorkerStatistics left, ThreadPoolWorkerStatistics right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(ThreadWorkerStatistics left, ThreadWorkerStatistics right)
+        public static bool operator !=(ThreadPoolWorkerStatistics left, ThreadPoolWorkerStatistics right)
         {
             return !(left == right);
         }
     }
 
-    public struct ThreadAdjustmentStatistics : IEquatable<ThreadAdjustmentStatistics>
+    public struct ThreadPoolAdjustmentStatistics : IEquatable<ThreadPoolAdjustmentStatistics>
     {
         public long Time { get; set; }
         public double AverageThrouput { get; set; }
@@ -112,24 +112,24 @@ namespace DiagnosticCore.Statistics
         {
             return Reason switch
             {
-                0 => "Warmup",
-                1 => "Initializing",
-                2 => "Random move",
-                3 => "Climbing move",
-                4 => "Change point",
-                5 => "Stabilizing",
-                6 => "Starvation",
-                7 => "Thread timed out",
+                0 => "warmup",
+                1 => "itializing",
+                2 => "random_move",
+                3 => "climbing_move",
+                4 => "change_point",
+                5 => "stabilizing",
+                6 => "starvation",
+                7 => "timedout",
                 _ => throw new ArgumentOutOfRangeException("reason not defined."),
             };
         }
 
         public override bool Equals(object obj)
         {
-            return obj is ThreadAdjustmentStatistics statistics && Equals(statistics);
+            return obj is ThreadPoolAdjustmentStatistics statistics && Equals(statistics);
         }
 
-        public bool Equals([AllowNull] ThreadAdjustmentStatistics other)
+        public bool Equals([AllowNull] ThreadPoolAdjustmentStatistics other)
         {
             return Time == other.Time &&
                    AverageThrouput == other.AverageThrouput &&
@@ -142,12 +142,12 @@ namespace DiagnosticCore.Statistics
             return HashCode.Combine(Time, AverageThrouput, NewWorkerThreads, Reason);
         }
 
-        public static bool operator ==(ThreadAdjustmentStatistics left, ThreadAdjustmentStatistics right)
+        public static bool operator ==(ThreadPoolAdjustmentStatistics left, ThreadPoolAdjustmentStatistics right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(ThreadAdjustmentStatistics left, ThreadAdjustmentStatistics right)
+        public static bool operator !=(ThreadPoolAdjustmentStatistics left, ThreadPoolAdjustmentStatistics right)
         {
             return !(left == right);
         }

@@ -9,7 +9,6 @@ namespace DiagnosticCore.Statistics
     {
         GCStartEnd,
         GCSuspend,
-        GCHeapStat
     }
 
     /// <summary>
@@ -82,14 +81,14 @@ namespace DiagnosticCore.Statistics
         {
             return Reason switch
             {
-                0 => "Small object heap allocation",
-                1 => "Induced",
-                2 => "Low memory",
-                3 => "Empty",
-                4 => "Large object heap allocation",
-                5 => "Out of space (for small object heap)",
-                6 => "Out of space(for large object heap)",
-                7 => "Induced but not forced as blocking",
+                0 => "soh",
+                1 => "induced",
+                2 => "low_memory",
+                3 => "empty",
+                4 => "loh",
+                5 => "oos_soh",
+                6 => "oos_loh",
+                7 => "incuded_non_forceblock",
                 _ => throw new ArgumentOutOfRangeException("reason not defined."),
             };
         }
@@ -146,13 +145,13 @@ namespace DiagnosticCore.Statistics
         {
             return Reason switch
             {
-                0 => "Other",
-                1 => "Garbage collection",
-                2 => "Application domain shutdown",
-                3 => "Code pitching",
-                4 => "Shutdown",
-                5 => "Debugger",
-                6 => "Preparation for garbage collection",
+                0 => "other",
+                1 => "gc",
+                2 => "appdomain_shudown",
+                3 => "code_pitch",
+                4 => "shutdown",
+                5 => "debugger",
+                6 => "prep_gc",
                 _ => throw new ArgumentOutOfRangeException("reason not defined."),
             };
         }

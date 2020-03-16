@@ -53,8 +53,8 @@ namespace DiagnosticCore.EventListeners
                     // write to channel
                     _channel.Writer.TryWrite(new ThreadPoolEventStatistics
                     {
-                        Type = ThreadPoolStatisticType.ThreadAdjustment,
-                        ThreadAdjustment = new ThreadAdjustmentStatistics
+                        Type = ThreadPoolStatisticType.ThreadPoolAdjustment,
+                        ThreadPoolAdjustment = new ThreadPoolAdjustmentStatistics
                         {
                             Time = time,
                             NewWorkerThreads = newWorkerThreadCount,
@@ -63,8 +63,7 @@ namespace DiagnosticCore.EventListeners
                         },
                     });
                 }
-                else if (eventData.EventName.StartsWith("ThreadPoolWorkerThreadStart", StringComparison.OrdinalIgnoreCase)
-                    || eventData.EventName.StartsWith("ThreadPoolWorkerThreadStop", StringComparison.OrdinalIgnoreCase))
+                else if (eventData.EventName.StartsWith("ThreadPoolWorkerThreadStop", StringComparison.OrdinalIgnoreCase))
                 {
                     long time = eventData.TimeStamp.Ticks;
                     var activeWrokerThreadCount = uint.Parse(eventData.Payload[0].ToString());
@@ -74,8 +73,8 @@ namespace DiagnosticCore.EventListeners
                     // write to channel
                     _channel.Writer.TryWrite(new ThreadPoolEventStatistics
                     {
-                        Type = ThreadPoolStatisticType.ThreadWorker,
-                        ThreadWorker = new ThreadWorkerStatistics
+                        Type = ThreadPoolStatisticType.ThreadPoolWorkerStartStop,
+                        ThreadPoolWorker = new ThreadPoolWorkerStatistics
                         {
                             Time = time,
                             ActiveWrokerThreads = activeWrokerThreadCount,
