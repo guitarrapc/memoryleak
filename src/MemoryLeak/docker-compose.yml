@@ -6,3 +6,16 @@ services:
     build:
       context: .
       dockerfile: MemoryLeak/Dockerfile
+    networks:
+      - datadog
+  dd-agent:
+    image: datadog/dogstatsd:latest
+    environment:
+      - DD_SEND_HOST_METADATA=false
+    env_file:
+      - ./dd_api_key.env
+    networks:
+      - datadog
+
+networks:
+  datadog:

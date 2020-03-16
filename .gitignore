@@ -357,3 +357,6 @@ MigrationBackup/
 *.dump
 *.nettrace
 *.dmp
+
+# docker-compose
+dd_api_key.*

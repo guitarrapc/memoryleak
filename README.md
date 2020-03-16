@@ -1,9 +1,21 @@
-Ref
+## Ref
 
-> https://github.com/dotnet/diagnostics/blob/master/documentation/diagnostics-client-library-instructions.md
-> https://github.com/dotnet/BenchmarkDotNet/blob/master/src/BenchmarkDotNet/Diagnosers/MemoryDiagnoser.cs
-> https://github.com/dotnet/BenchmarkDotNet/blob/8b018d7414497df0fcefec11f8bb97ad06ce0cf5/docs/articles/guides/how-it-works.md
-> https://github.com/dotnet/BenchmarkDotNet/blob/9caa0556b033a786c376324f73a14457290fccb9/docs/articles/samples/IntroNativeMemory.md
+> * https://github.com/dotnet/diagnostics/blob/master/documentation/diagnostics-client-library-instructions.md
+> * https://github.com/dotnet/BenchmarkDotNet/blob/master/src/BenchmarkDotNet/Diagnosers/MemoryDiagnoser.cs
+> * https://github.com/dotnet/BenchmarkDotNet/blob/8b018d7414497df0fcefec11f8bb97ad06ce0cf5/docs/articles/guides/how-it-works.md
+> * https://github.com/dotnet/BenchmarkDotNet/blob/9caa0556b033a786c376324f73a14457290fccb9/docs/articles/samples/IntroNativeMemory.md
+
+## Test environment: docker-compose
+
+To ensure dogstatsd working, use docker-compose to link MemoryLeak container and dogstatsd container.
+Before running docker-compose, generate dd_api_key.env to set api key in container.
+
+```
+$ echo "DD_API_KEY=YOUR_DD_API_KEY" > dd_api_key.env
+```
+
+Now you can run `docker-compose up` or Debug on Visual Studio with F5.
+
 
 # Endpoints
 

@@ -9,6 +9,7 @@
     <DockerServiceName>memoryleak</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="dd_api_key.env" />
     <None Include="docker-compose.override.yml">
       <DependentUpon>docker-compose.yml</DependentUpon>
     </None>
