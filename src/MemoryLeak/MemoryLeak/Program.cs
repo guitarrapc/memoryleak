@@ -29,8 +29,7 @@ namespace MemoryLeak
         {
             // profiler
             var loggerFactory = LoggerFactory.Create(logging => logging.AddMyConsoleLogger());
-            var diagnostics = new ProfilerDiagnostics(loggerFactory);
-            diagnostics.EnableTracker();
+            var diagnostics = new Diagnostics(loggerFactory);
             diagnostics.StartTracker();
 
             return CreateBuilderDefault(args);

@@ -11,13 +11,12 @@ namespace MemoryLeak
     public class DiagnosticsService : IHostedService
     {
         private readonly ILogger<DiagnosticsService> _logger;
-        private readonly ProfilerDiagnostics _diagnostics;
+        private readonly Diagnostics _diagnostics;
 
         public DiagnosticsService(ILogger<DiagnosticsService> logger, ILoggerFactory loggerFactory)
         {
             _logger = logger;
-            _diagnostics = new ProfilerDiagnostics(loggerFactory);
-            _diagnostics.EnableTracker();
+            _diagnostics = new Diagnostics(loggerFactory);
         }
 
         public Task StartAsync(CancellationToken cancellationToken)

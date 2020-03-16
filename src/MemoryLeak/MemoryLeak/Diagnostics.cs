@@ -1,20 +1,25 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using DiagnosticCore;
 using DiagnosticCore.Statistics;
 using Microsoft.Extensions.Logging;
+using StatsdClient;
 
 namespace MemoryLeak
 {
-    public class ProfilerDiagnostics
+    public class Diagnostics
     {
-        private readonly ILogger<ProfilerDiagnostics> _logger;
-        public ProfilerDiagnostics(ILoggerFactory loggerFactory)
+        private readonly ILogger<Diagnostics> _logger;
+        public Diagnostics(ILoggerFactory loggerFactory)
         {
-            _logger = loggerFactory.CreateLogger<ProfilerDiagnostics>();
+            _logger = loggerFactory.CreateLogger<Diagnostics>();
+
+            EnableDatadog();
+            EnableTracker();
         }
 
-        public void EnableTracker()
+        private void EnableTracker()
         {
             // InProcess tracker
             ProfilerTracker.Options = new ProfilerTrackerOptions
@@ -26,6 +31,21 @@ namespace MemoryLeak
                 GCInfoTimerCallback = (GCInfoTimerCallback, OnException),
                 ProcessInfoTimerCallback = (ProcessInfoTimerCallback, OnException),
             };
+        }
+        private void EnableDatadog()
+        {
+            var dogstatsdConfig = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? new StatsdConfig
+                {
+                    StatsdServerName = "127.0.0.1", // udp for Windows Host
+                    StatsdPort = 8172,
+                }
+                : new StatsdConfig
+                {
+                    StatsdServerName = "unix:///tmp/dsd.socket", // unix domain socket only work on Linux (Windows missing SocketType.Dgram)
+                };
+            DogStatsd.Configure(dogstatsdConfig);
+
         }
         public void StartTracker()
         {
