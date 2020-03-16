@@ -96,6 +96,12 @@ namespace MemoryLeak
             {
                 DatadogTracing.ThreadPoolEventAdjustment(arg.ThreadPoolAdjustment);
                 _logger.LogInformation($"ThreadAdjustment Reason {arg.ThreadPoolAdjustment.Reason}; NewWorkerThread {arg.ThreadPoolAdjustment.NewWorkerThreads}; AverageThrouput {arg.ThreadPoolAdjustment.AverageThrouput};");
+
+                if (arg.ThreadPoolAdjustment.Reason == 0x07)
+                {
+                    // special handling for threadPool starvation. This is really critical for .NET (.NET Core) Apps.
+                    DatadogTracing.ThreadPoolStarvationEventAdjustment(arg.ThreadPoolAdjustment);
+                }
             }
             return Task.CompletedTask;
         }

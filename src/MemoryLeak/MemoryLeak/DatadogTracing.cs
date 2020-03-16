@@ -72,6 +72,10 @@ namespace MemoryLeak
             DogStatsd.Gauge("clr_diagnostics_event.threadpool.adjustment_avg_throughput", statistics.AverageThrouput, tags: new[] { $"thread_adjust_reason:{statistics.GetReasonString()}" });
             DogStatsd.Gauge("clr_diagnostics_event.threadpool.adjustment_new_workerthreads_count", statistics.NewWorkerThreads, tags: new[] { $"thread_adjust_reason:{statistics.GetReasonString()}" });
         }
+        public static void ThreadPoolStarvationEventAdjustment(in ThreadPoolAdjustmentStatistics statistics)
+        {
+            DogStatsd.Event("ThreadPool Starvation detected", ".NET CLR automatically expanding ThreadPool, but this results slow down system. Watch out for error increase and take action to expan thread pool in advance.", alertType: "warning", aggregationKey: "host");
+        }
 
 
         /// list of timer tags
