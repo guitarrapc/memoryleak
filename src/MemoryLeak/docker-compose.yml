@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  memoryleak:
+    image: ${DOCKER_REGISTRY-}memoryleak
+    build:
+      context: .
+      dockerfile: MemoryLeak/Dockerfile

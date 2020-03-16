@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diag", "Diag\Diag.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiagnosticCore", "DiagnosticCore\DiagnosticCore.csproj", "{48C65261-FEEB-49ED-BBA4-DA8B0D655A81}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiagnosticCore.Oop", "DiagnosticCore.Oop\DiagnosticCore.Oop.csproj", "{8CAD9297-002E-43DF-A980-3F9098845D46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiagnosticCore.Oop", "DiagnosticCore.Oop\DiagnosticCore.Oop.csproj", "{8CAD9297-002E-43DF-A980-3F9098845D46}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{AFA77525-FC2E-4D86-8414-E332F1F32803}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{8CAD9297-002E-43DF-A980-3F9098845D46}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CAD9297-002E-43DF-A980-3F9098845D46}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CAD9297-002E-43DF-A980-3F9098845D46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFA77525-FC2E-4D86-8414-E332F1F32803}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFA77525-FC2E-4D86-8414-E332F1F32803}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFA77525-FC2E-4D86-8414-E332F1F32803}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFA77525-FC2E-4D86-8414-E332F1F32803}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
