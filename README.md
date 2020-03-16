@@ -23,14 +23,14 @@ run bench.
 
 ```shell
 bombardier -c 125 -n 10000000 http://localhost:5000
-bombardier -c 125 -n 10000000 http://localhost:5000/api/staticstring
-bombardier -c 125 -n 10000000 http://localhost:5000/api/bigstring
-bombardier -c 125 -n 10000000 http://localhost:5000/api/bigintarray
-bombardier -c 125 -n 10000000 http://localhost:5000/api/loh
-bombardier -c 125 -n 10000000 http://localhost:5000/api/fileprovider
-bombardier -c 125 -n 10000000 http://localhost:5000/api/array/10000
-bombardier -c 125 -n 10000000 http://localhost:5000/api/httpclient1?url=https://google.com
-bombardier -c 125 -n 10000000 http://localhost:5000/api/httpclient2?url=https://google.com
+bombardier http://localhost:5000/api/staticstring
+bombardier http://localhost:5000/api/bigstring
+bombardier http://localhost:5000/api/bigintarray
+bombardier http://localhost:5000/api/loh
+bombardier http://localhost:5000/api/fileprovider
+bombardier http://localhost:5000/api/array/10000
+bombardier http://localhost:5000/api/httpclient1?url=https://google.com
+bombardier http://localhost:5000/api/httpclient2?url=https://google.com
 ```
 
 Diag
@@ -55,7 +55,7 @@ docker build -t diag -f .\Diag\Dockerfile .
 deploy to k8s.
 
 ```shell
-kubectl kustomize ./k8s/ | kubectl apply -f -
+kubectl kustomize ./k8s/Diag | kubectl apply -f -
 ```
 
 call memleak api.
