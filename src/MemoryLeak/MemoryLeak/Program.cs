@@ -11,6 +11,8 @@ namespace MemoryLeak
     {
         public static void Main(string[] args)
         {
+            //ThreadPool.SetMinThreads(Environment.ProcessorCount * 1000, 1000);
+
             // if you want run Diagnostics without DI.
             //WithoutHostedService(args).Build().Run();
 
@@ -25,7 +27,12 @@ namespace MemoryLeak
 
         public static IHostBuilder WithoutHostedService(string[] args)
         {
-            Diagnostics.EnableTracker();
+            // profiler
+            var loggerFactory = LoggerFactory.Create(logging => logging.AddMyConsoleLogger());
+            var diagnostics = new ProfilerDiagnostics(loggerFactory);
+            diagnostics.EnableTracker();
+            diagnostics.StartTracker();
+
             return CreateBuilderDefault(args);
         }
 
