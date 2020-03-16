@@ -1,16 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using DiagnosticCore;
-using DiagnosticCore.Oop;
 using DiagnosticCore.Statistics;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -20,11 +13,35 @@ namespace MemoryLeak
     {
         public static void Main(string[] args)
         {
-            EnableTracker();
-            CreateWebHostBuilder(args).Build().Run();
+            // if you want run Diagnostics without DI.
+            //WithoutHostedService(args).Build().Run();
+
+            // if you want run Diagnostics with IHostedService
+            WithHostedService(args).Build().Run();
         }
 
-        public static IHostBuilder CreateWebHostBuilder(string[] args) =>
+        public static IHostBuilder WithHostedService(string[] args)
+        {
+            return CreateBuilderCustom(args);
+        }
+
+        public static IHostBuilder WithoutHostedService(string[] args)
+        {
+            EnableTracker();
+            return CreateBuilderDefault(args);
+        }
+
+        public static IHostBuilder CreateBuilderCustom(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureLogging((context, logging) =>
+                {
+                    logging.ClearProviders();
+                    logging.AddMyConsoleLogger();
+                })
+                .ConfigureServices((context, services) => services.AddHostedService<DiagnosticsService>())
+                .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
+
+        public static IHostBuilder CreateBuilderDefault(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
 
