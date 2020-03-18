@@ -5,6 +5,13 @@
 > * https://github.com/dotnet/BenchmarkDotNet/blob/8b018d7414497df0fcefec11f8bb97ad06ce0cf5/docs/articles/guides/how-it-works.md
 > * https://github.com/dotnet/BenchmarkDotNet/blob/9caa0556b033a786c376324f73a14457290fccb9/docs/articles/samples/IntroNativeMemory.md
 
+for CLR monitoring
+
+> * https://assets.ctfassets.net/9n3x4rtjlya6/64oeOVRnpuUeT8rTyO7gJK/bd629f0a711c85663b3fcec3e6279e5f/ChristopheNasarre_MonitoringPipelineIn.NET.pdf
+> * http://labs.criteo.com/2018/09/monitor-finalizers-contention-and-threads-in-your-application/
+> * https://medium.com/criteo-labs/spying-on-net-garbage-collector-with-traceevent-f49dc3117de
+
+
 ## Test environment: docker-compose
 
 To ensure dogstatsd working, use docker-compose to link MemoryLeak container and dogstatsd container.
