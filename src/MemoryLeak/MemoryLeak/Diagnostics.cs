@@ -42,6 +42,10 @@ namespace MemoryLeak
         {
             ProfilerTracker.Current.Value.Stop();
         }
+        public void CancelTracker()
+        {
+            ProfilerTracker.Current.Value.Cancel();
+        }
         private void OnException(Exception exception) => _logger.LogError(exception, "Error while diagnostics.");
 
         /// <summary>
