@@ -359,4 +359,4 @@ MigrationBackup/
 *.dmp
 
 # docker-compose
-dd_api_key.*
+dd_api_key.env
