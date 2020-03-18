@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Cysharp.Text;
 using DiagnosticCore.Statistics;
 using StatsdClient;
 
@@ -10,6 +10,8 @@ namespace MemoryLeak
 {
     public static class DatadogTracing
     {
+        private static readonly ConcurrentDictionary<string, string[]> tagCache = new ConcurrentDictionary<string, string[]>();
+
         public static void EnableDatadog(string statsdServerAddress, int statsdServerPort)
         {
             // always use udp port
@@ -41,7 +43,8 @@ namespace MemoryLeak
         // ContentionEvent
         public static void ContentionEventStartEnd(in ContentionEventStatistics statistics)
         {
-            var tags = new[] { $"contention_type:{statistics.Flag}" };
+            var key = ZString.Concat("contention_type:", statistics.Flag);
+            var tags = tagCache.GetOrAdd(key, key => new[] { key });
             DogStatsd.Increment("clr_diagnostics_event.contention.startend_count", tags: tags);
             DogStatsd.Gauge("clr_diagnostics_event.contention.startend_duration_ns", statistics.DurationNs, tags: tags);
         }
@@ -49,14 +52,16 @@ namespace MemoryLeak
         // GCEvent
         public static void GcEventStartEnd(in GCStartEndStatistics statistics)
         {
-            var tags = new[] { $"gc_gen:{statistics.Generation}", $"gc_type:{statistics.Type}", $"gc_reason:{statistics.GetReasonString()}" };
+            var key = ZString.Concat("gc_gen:", statistics.Generation, statistics.Type, statistics.Reason);
+            var tags = tagCache.GetOrAdd(key, (key, stat) => new[] { ZString.Concat($"gc_gen:", stat.Generation), ZString.Concat("gc_type:",stat.Type), ZString.Concat("gc_reason:",stat.GetReasonString()) }, statistics);
             DogStatsd.Increment("clr_diagnostics_event.gc.startend_count", tags: tags);
             DogStatsd.Gauge("clr_diagnostics_event.gc.startend_duration_ms", statistics.DurationMillsec, tags: tags);
         }
         
         public static void GcEventSuspend(in GCSuspendStatistics statistics)
         {
-            var tags = new[] { $"gc_suspend_reason:{statistics.GetReasonString()}" };
+            var key = ZString.Concat("gc_suspend:", statistics.Reason);
+            var tags = tagCache.GetOrAdd(key, (key, stat) => new[] { ZString.Concat("gc_suspend_reason:", stat.GetReasonString()) }, statistics);
             DogStatsd.Counter("clr_diagnostics_event.gc.suspend_object_count", statistics.Count, tags: tags);
             DogStatsd.Gauge("clr_diagnostics_event.gc.suspend_duration_ms", statistics.DurationMillisec, tags: tags);
         }
@@ -68,7 +73,8 @@ namespace MemoryLeak
         }
         public static void ThreadPoolEventAdjustment(in ThreadPoolAdjustmentStatistics statistics)
         {
-            var tags = new[] { $"thread_adjust_reason:{statistics.GetReasonString()}" };
+            var key = ZString.Concat("thread_adjust_reason", statistics.Reason);
+            var tags = tagCache.GetOrAdd(key, (key, stat) => new[] { ZString.Concat("thread_adjust_reason:", stat.GetReasonString()) }, statistics);
             DogStatsd.Gauge("clr_diagnostics_event.threadpool.adjustment_avg_throughput", statistics.AverageThrouput, tags: tags);
             DogStatsd.Gauge("clr_diagnostics_event.threadpool.adjustment_new_workerthreads_count", statistics.NewWorkerThreads, tags: tags);
         }
@@ -102,11 +108,17 @@ namespace MemoryLeak
         // GC
         public static void GcInfoTimerGauge(in GCInfoStatistics statistics)
         {
-            var baseTag = new[] { $"gc_gen:0", $"gc_mode:{statistics.GetGCModeString()}", $"latency_mode:{statistics.GetLatencyModeString()}", $"compaction_mode:{statistics.GetCompactionModeString()}" };
-            var gen0Tags = baseTag.Prepend($"gc_gen:0").ToArray();
-            var gen1Tags = baseTag.Prepend($"gc_gen:1").ToArray();
-            var gen2Tags = baseTag.Prepend($"gc_gen:2").ToArray();
-            var genLohTags = baseTag.Prepend($"gc_gen:loh").ToArray();
+            var baseTagkey = ZString.Concat("gc_mode", statistics.GCMode, statistics.LatencyMode, statistics.CompactionMode);
+            var baseTag = tagCache.GetOrAdd(baseTagkey, (key, stat) => new[] { 
+                ZString.Concat("gc_mode:", stat.GetGCModeString()), 
+                ZString.Concat("latency_mode:", stat.GetLatencyModeString()), 
+                ZString.Concat("compaction_mode:", stat.GetCompactionModeString())
+            }, statistics);
+            var gen0Tags = tagCache.GetOrAdd(ZString.Concat("gen0", baseTagkey), key => baseTag.Prepend($"gc_gen:0").ToArray());
+            var gen1Tags = tagCache.GetOrAdd(ZString.Concat("gen1", baseTagkey), key => baseTag.Prepend($"gc_gen:1").ToArray());
+            var gen2Tags = tagCache.GetOrAdd(ZString.Concat("gen2", baseTagkey), key => baseTag.Prepend($"gc_gen:2").ToArray());
+            var genLohTags = tagCache.GetOrAdd(ZString.Concat("genLoh", baseTagkey), key => baseTag.Prepend($"gc_gen:loh").ToArray());
+
             DogStatsd.Gauge("clr_diagnostics_timer.gc.heap_size_bytes", statistics.HeapSize);
             DogStatsd.Gauge("clr_diagnostics_timer.gc.gc_count", statistics.Gen0Count, tags: gen0Tags );
             DogStatsd.Gauge("clr_diagnostics_timer.gc.gc_count", statistics.Gen1Count, tags: gen1Tags);

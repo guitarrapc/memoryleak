@@ -16,8 +16,12 @@
 
   <ItemGroup>
     <PackageReference Include="DogStatsD-CSharp-Client" Version="4.0.1" />
+	<PackageReference Include="ZString" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
 	<ProjectReference Include="..\DiagnosticCore.Oop\DiagnosticCore.Oop.csproj" />
-    <ProjectReference Include="..\DiagnosticCore\DiagnosticCore.csproj" />
+	<ProjectReference Include="..\DiagnosticCore\DiagnosticCore.csproj" />
   </ItemGroup>
 
 </Project>
