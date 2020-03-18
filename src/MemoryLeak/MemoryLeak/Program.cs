@@ -28,8 +28,9 @@ namespace MemoryLeak
         public static IHostBuilder WithoutHostedService(string[] args)
         {
             // profiler
+            var datadogHostAddress = Environment.GetEnvironmentVariable("DD_NODE_HOST") ?? "127.0.0.1";
             var loggerFactory = LoggerFactory.Create(logging => logging.AddMyConsoleLogger());
-            var diagnostics = new Diagnostics(loggerFactory);
+            var diagnostics = new Diagnostics(datadogHostAddress, loggerFactory);
             diagnostics.StartTracker();
 
             return CreateBuilderDefault(args);

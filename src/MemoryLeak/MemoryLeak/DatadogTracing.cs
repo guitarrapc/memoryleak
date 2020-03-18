@@ -10,18 +10,14 @@ namespace MemoryLeak
 {
     public static class DatadogTracing
     {
-        public static void EnableDatadog()
+        public static void EnableDatadog(string statsdServerAddress, int statsdServerPort)
         {
-            var dogstatsdConfig = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? new StatsdConfig
-                {
-                    StatsdServerName = "127.0.0.1", // udp for Windows Host
-                    StatsdPort = 8125,
-                }
-                : new StatsdConfig
-                {
-                    StatsdServerName = "unix:///tmp/dsd.socket", // unix domain socket only work on Linux (Windows missing SocketType.Dgram)
-                };
+            // always use udp port
+            var dogstatsdConfig = new StatsdConfig
+            {
+                StatsdServerName = statsdServerAddress,
+                StatsdPort = statsdServerPort,
+            };
             DogStatsd.Configure(dogstatsdConfig);
         }
 

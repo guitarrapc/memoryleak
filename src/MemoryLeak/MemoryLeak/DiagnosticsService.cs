@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -13,10 +14,11 @@ namespace MemoryLeak
         private readonly ILogger<DiagnosticsService> _logger;
         private readonly Diagnostics _diagnostics;
 
-        public DiagnosticsService(ILogger<DiagnosticsService> logger, ILoggerFactory loggerFactory)
+        public DiagnosticsService(IConfiguration config, ILogger<DiagnosticsService> logger, ILoggerFactory loggerFactory)
         {
             _logger = logger;
-            _diagnostics = new Diagnostics(loggerFactory);
+            var datadogHostAddress = config.GetValue("DD_NODE_HOST", "127.0.0.1");
+            _diagnostics = new Diagnostics(datadogHostAddress, loggerFactory);
         }
 
         public Task StartAsync(CancellationToken cancellationToken)

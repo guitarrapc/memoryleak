@@ -1,29 +1,28 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using DiagnosticCore;
 using DiagnosticCore.Statistics;
 using Microsoft.Extensions.Logging;
-using StatsdClient;
 
 namespace MemoryLeak
 {
     public class Diagnostics
     {
         private readonly ILogger<Diagnostics> _logger;
-        public Diagnostics(ILoggerFactory loggerFactory)
+        public Diagnostics(string nodeAddress, ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<Diagnostics>();
 
-            // Enable Datadog before tracker.
-            DatadogTracing.EnableDatadog();
-
             // Enable Inprocess Tracker
-            EnableTracker();
+            EnableTracker(nodeAddress);
         }
 
-        private void EnableTracker()
+        private void EnableTracker(string nodeAddress)
         {
+
+            // Enable Datadog before tracker.
+            DatadogTracing.EnableDatadog(nodeAddress, 8125);
+
             // InProcess tracker
             ProfilerTracker.Options = new ProfilerTrackerOptions
             {
