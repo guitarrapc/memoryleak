@@ -68,6 +68,9 @@ namespace DiagnosticCore.Statistics
         public bool Equals([AllowNull] GCInfoStatistics other)
         {
             return Date == other.Date &&
+                   GCMode == other.GCMode &&
+                   EqualityComparer<GCLargeObjectHeapCompactionMode>.Default.Equals(CompactionMode, other.CompactionMode) &&
+                   EqualityComparer<GCLatencyMode>.Default.Equals(LatencyMode, other.LatencyMode) &&
                    HeapSize == other.HeapSize &&
                    Gen0Count == other.Gen0Count &&
                    Gen1Count == other.Gen1Count &&
@@ -83,6 +86,9 @@ namespace DiagnosticCore.Statistics
         {
             var hash = new HashCode();
             hash.Add(Date);
+            hash.Add(GCMode);
+            hash.Add(CompactionMode);
+            hash.Add(LatencyMode);
             hash.Add(HeapSize);
             hash.Add(Gen0Count);
             hash.Add(Gen1Count);
