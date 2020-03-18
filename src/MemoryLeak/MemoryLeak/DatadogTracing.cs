@@ -45,21 +45,24 @@ namespace MemoryLeak
         // ContentionEvent
         public static void ContentionEventStartEnd(in ContentionEventStatistics statistics)
         {
-            DogStatsd.Increment("clr_diagnostics_event.contention.startend_count", tags: new[] { $"contention_type:{statistics.Flag}" });
-            DogStatsd.Gauge("clr_diagnostics_event.contention.startend_duration_ns", statistics.DurationNs, tags: new[] { $"contention_type:{statistics.Flag}" });
+            var tags = new[] { $"contention_type:{statistics.Flag}" };
+            DogStatsd.Increment("clr_diagnostics_event.contention.startend_count", tags: tags);
+            DogStatsd.Gauge("clr_diagnostics_event.contention.startend_duration_ns", statistics.DurationNs, tags: tags);
         }
 
         // GCEvent
         public static void GcEventStartEnd(in GCStartEndStatistics statistics)
-        { 
-            DogStatsd.Increment("clr_diagnostics_event.gc.startend_count", tags: new[] { $"gc_gen:{statistics.Generation}", $"gc_type:{statistics.Type}", $"gc_reason:{statistics.GetReasonString()}" });
-            DogStatsd.Gauge("clr_diagnostics_event.gc.startend_duration_ms", statistics.DurationMillsec, tags: new[] { $"gc_gen:{statistics.Generation}", $"gc_type:{statistics.Type}", $"gc_reason:{statistics.GetReasonString()}" });
+        {
+            var tags = new[] { $"gc_gen:{statistics.Generation}", $"gc_type:{statistics.Type}", $"gc_reason:{statistics.GetReasonString()}" };
+            DogStatsd.Increment("clr_diagnostics_event.gc.startend_count", tags: tags);
+            DogStatsd.Gauge("clr_diagnostics_event.gc.startend_duration_ms", statistics.DurationMillsec, tags: tags);
         }
         
         public static void GcEventSuspend(in GCSuspendStatistics statistics)
         {
-            DogStatsd.Counter("clr_diagnostics_event.gc.suspend_object_count", statistics.Count, tags: new[] { $"gc_suspend_reason:{statistics.GetReasonString()}" });
-            DogStatsd.Gauge("clr_diagnostics_event.gc.suspend_duration_ms", statistics.DurationMillisec, tags: new[] { $"gc_suspend_reason:{statistics.GetReasonString()}" });
+            var tags = new[] { $"gc_suspend_reason:{statistics.GetReasonString()}" };
+            DogStatsd.Counter("clr_diagnostics_event.gc.suspend_object_count", statistics.Count, tags: tags);
+            DogStatsd.Gauge("clr_diagnostics_event.gc.suspend_duration_ms", statistics.DurationMillisec, tags: tags);
         }
 
         // ThreadPoolEvent
@@ -69,8 +72,9 @@ namespace MemoryLeak
         }
         public static void ThreadPoolEventAdjustment(in ThreadPoolAdjustmentStatistics statistics)
         {
-            DogStatsd.Gauge("clr_diagnostics_event.threadpool.adjustment_avg_throughput", statistics.AverageThrouput, tags: new[] { $"thread_adjust_reason:{statistics.GetReasonString()}" });
-            DogStatsd.Gauge("clr_diagnostics_event.threadpool.adjustment_new_workerthreads_count", statistics.NewWorkerThreads, tags: new[] { $"thread_adjust_reason:{statistics.GetReasonString()}" });
+            var tags = new[] { $"thread_adjust_reason:{statistics.GetReasonString()}" };
+            DogStatsd.Gauge("clr_diagnostics_event.threadpool.adjustment_avg_throughput", statistics.AverageThrouput, tags: tags);
+            DogStatsd.Gauge("clr_diagnostics_event.threadpool.adjustment_new_workerthreads_count", statistics.NewWorkerThreads, tags: tags);
         }
         public static void ThreadPoolStarvationEventAdjustment(in ThreadPoolAdjustmentStatistics statistics)
         {
@@ -102,15 +106,20 @@ namespace MemoryLeak
         // GC
         public static void GcInfoTimerGauge(in GCInfoStatistics statistics)
         {
+            var baseTag = new[] { $"gc_gen:0", $"gc_mode:{statistics.GetGCModeString()}", $"latency_mode:{statistics.GetLatencyModeString()}", $"compaction_mode:{statistics.GetCompactionModeString()}" };
+            var gen0Tags = baseTag.Prepend($"gc_gen:0").ToArray();
+            var gen1Tags = baseTag.Prepend($"gc_gen:1").ToArray();
+            var gen2Tags = baseTag.Prepend($"gc_gen:2").ToArray();
+            var genLohTags = baseTag.Prepend($"gc_gen:loh").ToArray();
             DogStatsd.Gauge("clr_diagnostics_timer.gc.heap_size_bytes", statistics.HeapSize);
-            DogStatsd.Gauge("clr_diagnostics_timer.gc.gc_count", statistics.Gen0Count, tags: new[] { $"gc_gen:0" });
-            DogStatsd.Gauge("clr_diagnostics_timer.gc.gc_count", statistics.Gen1Count, tags: new[] { $"gc_gen:1" });
-            DogStatsd.Gauge("clr_diagnostics_timer.gc.gc_count", statistics.Gen2Count, tags: new[] { $"gc_gen:2" });
-            DogStatsd.Gauge("clr_diagnostics_timer.gc.gc_size", statistics.Gen0Size, tags: new[] { $"gc_gen:0" });
-            DogStatsd.Gauge("clr_diagnostics_timer.gc.gc_size", statistics.Gen1Size, tags: new[] { $"gc_gen:1" });
-            DogStatsd.Gauge("clr_diagnostics_timer.gc.gc_size", statistics.Gen2Size, tags: new[] { $"gc_gen:2" });
-            DogStatsd.Gauge("clr_diagnostics_timer.gc.gc_size", statistics.LohSize, tags: new[] { $"gc_gen:loh" });
-            DogStatsd.Gauge("clr_diagnostics_timer.gc.time_in_gc_percent", statistics.TimeInGc);
+            DogStatsd.Gauge("clr_diagnostics_timer.gc.gc_count", statistics.Gen0Count, tags: gen0Tags );
+            DogStatsd.Gauge("clr_diagnostics_timer.gc.gc_count", statistics.Gen1Count, tags: gen1Tags);
+            DogStatsd.Gauge("clr_diagnostics_timer.gc.gc_count", statistics.Gen2Count, tags: gen2Tags);
+            DogStatsd.Gauge("clr_diagnostics_timer.gc.gc_size", statistics.Gen0Size, tags: gen0Tags);
+            DogStatsd.Gauge("clr_diagnostics_timer.gc.gc_size", statistics.Gen1Size, tags: gen1Tags);
+            DogStatsd.Gauge("clr_diagnostics_timer.gc.gc_size", statistics.Gen2Size, tags: gen2Tags);
+            DogStatsd.Gauge("clr_diagnostics_timer.gc.gc_size", statistics.LohSize, tags: genLohTags);
+            DogStatsd.Gauge("clr_diagnostics_timer.gc.time_in_gc_percent", statistics.TimeInGc, tags: baseTag);
         }
 
         // Process

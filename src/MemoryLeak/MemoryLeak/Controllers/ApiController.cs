@@ -45,6 +45,12 @@ namespace MemoryLeak.Controllers
             return count * 100;
         }
 
+        /// <summary>
+        /// loh/84975 : under loh and will not trigger loh gc
+        /// loh/84976 : under loh and will not trigger loh gc
+        /// </summary>
+        /// <param name="size"></param>
+        /// <returns></returns>
         [HttpGet("loh/{size=85000}")]
         public int GetLOH(int size)
         {

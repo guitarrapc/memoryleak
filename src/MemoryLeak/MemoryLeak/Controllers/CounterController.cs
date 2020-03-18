@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using DiagnosticCore.Oop;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Runtime;
 
 namespace MemoryLeak.Controllers
 {
@@ -81,6 +82,23 @@ namespace MemoryLeak.Controllers
         {
             AllocationTracker<GcStats>.Current.Final();
             AllocationTracker<ThreadingStats>.Current.Final();
+            return Ok();
+        }
+
+        [HttpGet("compact_loh")]
+        public ActionResult CompactLogImmediate()
+        {
+            // contact loh immediately.
+            var before = GCSettings.LargeObjectHeapCompactionMode;
+            try
+            {
+                GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+                GC.Collect();
+            }
+            finally
+            {
+                GCSettings.LargeObjectHeapCompactionMode = before;
+            }
             return Ok();
         }
 

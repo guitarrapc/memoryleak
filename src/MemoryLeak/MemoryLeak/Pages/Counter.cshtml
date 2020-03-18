@@ -40,6 +40,7 @@
         <button id="collect-btn" type="button" style="visibility:visible">Collect</button>
         <button id="current-btn" type="button" style="visibility:visible">Current</button>
         <button id="final-btn" type="button" style="visibility:visible">Final</button>
+        <button id="loh-btn" type="button" style="visibility:visible">Loh</button>
     </p>
 
     <div class="container">
@@ -177,6 +178,7 @@
         const collectUrl = "/api/counter/collect";
         const currentUrl = "/api/counter/current";
         const finalUrl = "/api/counter/final";
+        const compactLohUrl = "/api/counter/compact_loh";
 
         const maxEntries = 50;
         const interval = 300;
@@ -271,6 +273,7 @@
         document.getElementById("collect-btn").addEventListener("click", function () { fetch(collectUrl); });
         document.getElementById("current-btn").addEventListener("click", function () { fetch(currentUrl); });
         document.getElementById("final-btn").addEventListener("click", function () { fetch(finalUrl); });
+        document.getElementById("loh-btn").addEventListener("click", function () { fetch(compactLohUrl); });
 
     </script>
 </body>

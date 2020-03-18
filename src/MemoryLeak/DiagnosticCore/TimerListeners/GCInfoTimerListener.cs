@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime;
 using System.Text;
 using System.Threading;
 using System.Threading.Channels;
@@ -96,6 +97,10 @@ namespace DiagnosticCore.TimerListeners
             try
             {
                 var date = DateTime.Now;
+                var gcmode = GCSettings.IsServerGC ? GCMode.Server : GCMode.Workstation;
+                // https://docs.microsoft.com/en-us/dotnet/api/system.runtime.gcsettings.largeobjectheapcompactionmode
+                var compactionMode = GCSettings.LargeObjectHeapCompactionMode;
+                var latencyMode = GCSettings.LatencyMode;
                 var gcHeapSize = GC.GetTotalMemory(false); // bytes
                 var gen0Count = GC.CollectionCount(0);
                 var gen1Count = GC.CollectionCount(1);
@@ -110,6 +115,9 @@ namespace DiagnosticCore.TimerListeners
                 _channel.Writer.TryWrite(new GCInfoStatistics
                 {
                     Date = date,
+                    GCMode = gcmode,
+                    CompactionMode = compactionMode,
+                    LatencyMode = latencyMode,
                     Gen0Count　=gen0Count,
                     Gen1Count = gen1Count,
                     Gen2Count = gen2Count,

@@ -32,7 +32,7 @@ MemoryLeak
 * alloc staticstring:        http://localhost:5000/api/staticstring
 * alloc bigstring:           http://localhost:5000/api/bigstring
 * alloc big int array        http://localhost:5000/api/bigintarray
-* alloc loh:                 http://localhost:5000/api/loh/10000000
+* alloc loh:                 http://localhost:5000/api/loh/84976
 * alloc fileprovider:        http://localhost:5000/api/fileprovider
 * alloc array:               http://localhost:5000/api/array/10000
 * alloc httpclient1(using):  http://localhost:5000/api/httpclient1?url=https://google.com
@@ -45,7 +45,7 @@ bombardier -c 125 -n 10000000 http://localhost:5000
 bombardier http://localhost:5000/api/staticstring
 bombardier http://localhost:5000/api/bigstring
 bombardier http://localhost:5000/api/bigintarray
-bombardier http://localhost:5000/api/loh
+bombardier http://localhost:5000/api/loh/84976
 bombardier http://localhost:5000/api/fileprovider
 bombardier http://localhost:5000/api/array/10000
 bombardier http://localhost:5000/api/httpclient1?url=https://google.com
