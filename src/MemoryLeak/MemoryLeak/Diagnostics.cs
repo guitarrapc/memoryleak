@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using DiagnosticCore;
 using DiagnosticCore.Statistics;
@@ -8,7 +9,10 @@ namespace MemoryLeak
 {
     public class Diagnostics
     {
+        private static int singleAccess = 0;
+
         private readonly ILogger<Diagnostics> _logger;
+
         public Diagnostics(string nodeAddress, ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<Diagnostics>();
@@ -19,6 +23,9 @@ namespace MemoryLeak
 
         private void EnableTracker(string nodeAddress)
         {
+            // Single access guard
+            Interlocked.Increment(ref singleAccess);
+            if (singleAccess != 1) return;
 
             // Enable Datadog before tracker.
             DatadogTracing.EnableDatadog(nodeAddress, 8125);

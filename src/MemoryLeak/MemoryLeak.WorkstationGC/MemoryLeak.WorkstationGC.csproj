@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="DogStatsD-CSharp-Client" Version="4.0.1" />
+    <PackageReference Include="Pripod" Version="0.2.2" />
 	<PackageReference Include="ZString" Version="1.0.0" />
   </ItemGroup>
 
